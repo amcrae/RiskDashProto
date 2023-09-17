@@ -1,5 +1,18 @@
 class Segment < ApplicationRecord
   has_one :asset
+  
+  attr_accessor :level 
+  
+  def level=(l)
+    @level = l
+  end
+  
+  def level()
+    @level
+  end
+
+  @path = nil
+  attr_accessor :path
 
   VALID_OPERATIONAL_STATUSES = ['RUNNING', 'OFFLINE']
   

@@ -1,2 +1,22 @@
 <h1>Plant#index</h1>
 <p>Find me in app/views/plant/index.html.erb</p>
+
+<div id="layout1">
+
+<div id="segment_tree">
+	<ul>
+	<% @seg_tree.each do | seg | %>
+	<li><%= seg.level %> | <%= seg.id %> 	<%= seg.shortname %> 	^<%= seg.parent_id %>
+	<% end %>
+	</ul>
+
+</div>
+
+<div id="diagram_pane">
+<object id="engdiagram" data="<%= image_path('PumpingSubsystem.svg')%>" type="image/svg+xml">
+  <!-- <img src="yourfallback.jpg" /> -->
+</object>
+</div>
+
+</div>
+

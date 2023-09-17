@@ -13,3 +13,22 @@
  *= require_tree .
  *= require_self
  */
+ 
+ #layout1 {
+ 	display: table-row;
+ 	width: 100%;
+ 	vertical-align:top; 	
+ }
+ 
+ #segment_tree {
+ 	display: table-cell;
+ 	width: 40%;
+ 	vertical-align:top;
+ }
+ 
+#diagram_pane {
+	display: table-cell;
+	width: auto;
+ 	vertical-align:top;	
+}
+
