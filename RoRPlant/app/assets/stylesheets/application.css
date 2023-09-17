@@ -15,20 +15,33 @@
  */
  
  #layout1 {
- 	display: table-row;
+ 	display:table;
+    	table-layout:fixed;
  	width: 100%;
- 	vertical-align:top; 	
+ 	vertical-align:top;
  }
+
+ .sidebyside {
+ 	display: table-row; 
+}
  
  #segment_tree {
+ 	padding: 1em;
  	display: table-cell;
  	width: 40%;
  	vertical-align:top;
+ 	border: solid 2px black;
  }
  
 #diagram_pane {
 	display: table-cell;
 	width: auto;
- 	vertical-align:top;	
+	padding: 1em;
+ 	vertical-align:top;
+ 	border: solid 2px black;
+}
+
+#diagram_pane object {
+	overflow:scroll;
 }
 
