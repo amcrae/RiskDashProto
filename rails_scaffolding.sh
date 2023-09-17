@@ -1,8 +1,10 @@
 # used only during initial development and kept for posterity
-exit
+exit   # not meant to be run. documentation only.
 
 rails new RoRPlant
 cd RoRPlant
+
+bin/bundle install
 
 bin/rails generate model Asset uuid:string shortname:string asset_type:string readiness:string pof:float
 
@@ -21,4 +23,10 @@ bin/rails generate scaffold_controller Segment
 bin/rails generate scaffold_controller SegmentConnection
 bin/rails generate scaffold_controller MLocation
 bin/rails generate scaffold_controller Measurement
+
+bin/rails generate delayed_job:active_record
+bin/rails db:migrate
+
+bin/rails generate job SynthesiseData
+bin/rails generate controller Plant index start_synth stop_synth
 
