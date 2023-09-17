@@ -1,4 +1,20 @@
 <%= form_with(model: segment) do |form| %>
+
+  <div>
+    <%= form.label :"Short Name" %><br>
+    <%= form.text_area :shortname %><br>
+  </div>
+
+  <div>
+    <%= form.label :"Type" %><br>
+    <%= form.select :segtype, Segment::VALID_SEGMENT_TYPES %><br>
+  </div>
+
+  <div>
+    <%= form.label "Operational Status" %><br>
+    <%= form.select :operational, Segment::VALID_OPERATIONAL_STATUSES %><br>
+  </div>
+
   <% if segment.errors.any? %>
     <div style="color: red">
       <h2><%= pluralize(segment.errors.count, "error") %> prohibited this segment from being saved:</h2>

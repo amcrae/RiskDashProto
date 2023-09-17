@@ -65,6 +65,7 @@ class SegmentsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def segment_params
-      params.fetch(:segment, {})
+      # params.fetch(:segment, {})
+      params.require(:segment).permit(:shortname, :segtype, :operational)
     end
 end
