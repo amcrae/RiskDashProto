@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_17_062504) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_17_091534) do
   create_table "assets", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -56,17 +56,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_17_062504) do
     t.string "uuid"
     t.string "shortname"
     t.string "segtype"
-    t.integer "segment_id", null: false
+    t.integer "parent_id"
     t.string "operational"
-    t.integer "asset_id", null: false
+    t.integer "asset_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["asset_id"], name: "index_segments_on_asset_id"
-    t.index ["segment_id"], name: "index_segments_on_segment_id"
+    t.index ["parent_id"], name: "index_segments_on_parent_id"
   end
 
   add_foreign_key "m_locations", "segments"
   add_foreign_key "measurements", "mlocations"
   add_foreign_key "segments", "assets"
-  add_foreign_key "segments", "segments"
+  add_foreign_key "segments", "segments", column: "parent_id"
 end
