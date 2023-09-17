@@ -1,0 +1,17 @@
+<%= form_with(model: segment_connection) do |form| %>
+  <% if segment_connection.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(segment_connection.errors.count, "error") %> prohibited this segment_connection from being saved:</h2>
+
+      <ul>
+        <% segment_connection.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

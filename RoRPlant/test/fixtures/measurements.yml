@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  uuid: MyString
+  mlocation: one
+  timestamp: 2023-09-17 16:25:03
+  qtype: MyString
+  v: 9.99
+  uom: MyString
+
+two:
+  uuid: MyString
+  mlocation: two
+  timestamp: 2023-09-17 16:25:03
+  qtype: MyString
+  v: 9.99
+  uom: MyString

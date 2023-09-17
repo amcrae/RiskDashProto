@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  uuid: MyString
+  shortname: MyString
+  segtype: MyString
+  segment: one
+  operational: MyString
+  asset: one
+
+two:
+  uuid: MyString
+  shortname: MyString
+  segtype: MyString
+  segment: two
+  operational: MyString
+  asset: two

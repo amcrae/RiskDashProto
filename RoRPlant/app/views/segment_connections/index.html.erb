@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Segment connections</h1>
+
+<div id="segment_connections">
+  <% @segment_connections.each do |segment_connection| %>
+    <%= render segment_connection %>
+    <p>
+      <%= link_to "Show this segment connection", segment_connection %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New segment connection", new_segment_connection_path %>

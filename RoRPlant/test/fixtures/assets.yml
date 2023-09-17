@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  uuid: MyString
+  shortname: MyString
+  asset_type: MyString
+  readiness: MyString
+  pof: 1.5
+
+two:
+  uuid: MyString
+  shortname: MyString
+  asset_type: MyString
+  readiness: MyString
+  pof: 1.5

@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @segment_connection %>
+
+<div>
+  <%= link_to "Edit this segment connection", edit_segment_connection_path(@segment_connection) %> |
+  <%= link_to "Back to segment connections", segment_connections_path %>
+
+  <%= button_to "Destroy this segment connection", @segment_connection, method: :delete %>
+</div>

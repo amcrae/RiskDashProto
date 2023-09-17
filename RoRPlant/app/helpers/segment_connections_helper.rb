@@ -1,0 +1,2 @@
+module SegmentConnectionsHelper
+end
