@@ -27,6 +27,13 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# handy for synthetic data
+gem "perlin_noise"
+
+# background concurrent jobs
+gem 'delayed_job_active_record'
+gem 'daemons'
+
 # Use Redis adapter to run Action Cable in production
 # gem "redis", "~> 4.0"
 
