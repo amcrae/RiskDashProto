@@ -8,15 +8,25 @@ The application domain chosen for this mini project is a prototype industrial pl
 * `RoRPlant/` contains the implementation in Ruby on Rails.
 
 
+![Image](RiskDashProto Screenshot from 2023-09-18 18-58.png)
+
+
 ## Install
 
-1. `git clone` repo
+1. `git clone "https://github.com/amcrae/RiskDashProto.git" RiskDashProto`
 
-2. `cd RoRPlant`
+2. `cd RiskDashProto/RoRPlant`
 
 3. `bin/bundle install`
 
-4. `bin/rails db:create db:migrate`
+4. `bin/rails db:create db:migrate db:seed`
 
-5. `bin/rails server`
+
+## Start
+
+1. `cd RiskDashProto/RoRPlant`
+
+2. `bin/rails server`
+
+3. Browse to http://127.0.0.1:3000
 
