@@ -2,48 +2,13 @@
 <!-- Find me in app/views/plant/index.html.erb -->
 <p></p>
 
-<div id="layout1">
-
- <div id="row1" class="sidebyside">
-
-	<div id="segment_tree">
-	<h3>Plant Breakdown Structure</h3>
-	 <% @seg_tree.each do | seg | %>
-	 <div data-path="<%= seg.path %>">
-	 <table><tr>
-	  <td> <span style="margin-left:<%= (1.2 * seg.level).round(1) %>em;">┣</span> 
-	  <td>#<%= seg.id %> 
-	  <td><%= seg.segtype %> 
-	  <td><%= seg.shortname %> 
-	  <!-- <td>^<%= seg.parent_id %> -->
-	  <td> 🚦
-	  </tr>
-	  </table>
-	 </div>
-	 <% end %>
-
-	</div>
-
-	<div id="diagram_pane">
-	<h3>Diagram</h3>
-	<object id="engdiagram" data="<%= image_path('PumpingSubsystem.svg')%>" type="image/svg+xml">
-	  <!-- <img src="yourfallback.jpg" /> -->
-	</object>
-	</div>
-
- </div>
-
- <div id="row2" class="sidebyside">
-	<h3>Live Data (synthetic)</h3>
-	<script>
-	var job_launched = false;
-	  
+<script>
 		// Example POST method implementation:
 		async function sendData(method = "GET", url = "", data = null) {
 		  // Default options are marked with *
 		  foptions = {
 		    method: method, // *GET, POST, PUT, DELETE, etc.
-		    mode: "cors", // no-cors, *cors, same-origin
+		    mode: "same-origin", // no-cors, *cors, same-origin
 		    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
 		    credentials: "same-origin", // include, *same-origin, omit
 		    headers: {
@@ -66,6 +31,58 @@
 		  console.log(data); // JSON data parsed by `data.json()` call
 		});
 		*/
+		
+	  function sabotage(asset_id) {
+	    sendData("POST", "/plant/sabotage", {asset_id: asset_id} ).then( 
+	      (data) => {
+	      	  console.log(data);
+	      }
+	    );
+	  }
+  
+</script>
+
+<div id="layout1">
+
+ <div id="row1" class="sidebyside">
+
+	<div id="segment_tree">
+	<h3>Plant Breakdown Structure</h3>
+	 <% @seg_tree.each do | pair | 
+	    seg = pair[:seg];
+	    asset = pair[:asset];
+	 %>
+	 <div data-path="<%= seg.path %>">
+	 <table><tr>
+	  <td> <span style="margin-left:<%= (1.2 * seg.level).round(1) %>em;">┣</span> 
+	  <td>#<%= seg.id %> 
+	  <td><%= seg.segtype %> 
+	  <td><%= seg.shortname %> 
+	  <!-- <td>^<%= seg.parent_id %> -->
+	  <td> 🚦
+	  <td><% if asset != nil then %>
+	   <%= render partial: "asset_status/show", locals: { asset: asset, asset_id: seg.asset_id } %>
+	  <% end %>
+	  </tr>
+	  </table>
+	 </div>
+	 <% end %>
+
+	</div>
+
+	<div id="diagram_pane">
+	<h3>Diagram</h3>
+	<object id="engdiagram" data="<%= image_path('PumpingSubsystem.svg')%>" type="image/svg+xml">
+	  <!-- <img src="yourfallback.jpg" /> -->
+	</object>
+	</div>
+
+ </div>
+
+ <div id="row2" class="sidebyside">
+	<h3>Live Data (synthetic)</h3>
+	<script>
+	var job_launched = false;
 	  
 	  function start_data_thread() {
 	    if (job_launched) return false;

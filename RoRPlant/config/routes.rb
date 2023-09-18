@@ -1,7 +1,12 @@
 Rails.application.routes.draw do
-  get 'synth/restart_synth'
-  get 'synth/stop_synth'
-  get 'plant/index'
+  post 'asset_status/sabotage'
+  post 'asset_status/repair'
+  get 'asset_status/show'
+  
+  get '/synth/restart_synth'
+  get '/synth/stop_synth'
+
+  get '/plant/index'
   
   resources :measurements
   resources :m_locations
