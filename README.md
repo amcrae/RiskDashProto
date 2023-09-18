@@ -7,7 +7,7 @@ The application domain chosen for this mini project is a prototype industrial pl
 * `rails_scaffolding.sh` is a list of rails generation tasks done to set up first versions of a lot of files.
 * `RoRPlant/` contains the implementation in Ruby on Rails.
 
-<img src='./RiskDashProto+Screenshot+from+2023-09-18+18-58.png' alt="Recent screenshot showing a live graph and a motor disabled">
+<img src='./RiskDashProto%20Screenshot%20from%202023-09-18%2018-58.png' alt="Recent screenshot showing a live graph and a motor disabled">
 
 
 ## Install
