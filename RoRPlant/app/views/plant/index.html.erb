@@ -34,7 +34,90 @@
  </div>
 
  <div id="row2" class="sidebyside">
- 
+	<h3>Live Data (synthetic)</h3>
+	<script>
+	var job_launched = false;
+	  
+		// Example POST method implementation:
+		async function sendData(method = "GET", url = "", data = null) {
+		  // Default options are marked with *
+		  foptions = {
+		    method: method, // *GET, POST, PUT, DELETE, etc.
+		    mode: "cors", // no-cors, *cors, same-origin
+		    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+		    credentials: "same-origin", // include, *same-origin, omit
+		    headers: {
+		      "Content-Type": "application/json",
+		      // 'Content-Type': 'application/x-www-form-urlencoded',
+		    },
+		    redirect: "follow", // manual, *follow, error
+		    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+		  };
+		  if (data!=null) {
+		    foptions.body = JSON.stringify(data); // body data type must match "Content-Type" header
+		  }
+		  const response = await fetch(url, foptions);
+		  if (response.bodyUsed) return response.json(); // parses JSON response into native JavaScript objects
+		  return null;
+		}
+
+		/* 
+		postData("https://example.com/answer", { answer: 42 }).then((data) => {
+		  console.log(data); // JSON data parsed by `data.json()` call
+		});
+		*/
+	  
+	  function start_data_thread() {
+	    if (job_launched) return false;
+	    sendData("GET", "/synth/restart_synth", null).then( 
+	      (data) => {
+	      	  console.log(data);
+	      }
+	    );
+	  }
+	</script>
+ 	<div style="text-align:right; margin-right:0; "> <a href="#restart" onclick="start_data_thread(); return false;">✇⏯ Start Synth Thread</a></span><br>
+ 	
+	<div id="measurementDiv1"></div>
+	<script>
+	var chart_data = {
+	}
+	
+	function get_chart_arrays_for(mloc_id) {
+	  if (!(mloc_id in chart_data)) {
+		var init = {
+		  x:[ ],
+		  y:[ ]
+		};
+		chart_data[mloc_id] = init;
+	  } 
+	  return chart_data[mloc_id]
+	}
+
+	var m1 = [{
+	  x: [ ],
+	  y: [ ],
+	  mode: 'lines',
+	  line: {color: '#80CAF6'}
+	}]
+	Plotly.newPlot('measurementDiv1', m1);
+	</script>
+
+	<script>
+	function append_plot_data(datum) {
+	  //TODO: decode original float timestamp to JS Date
+	  var time = new Date();
+	  var series_data = get_chart_arrays_for(datum["mlocation_id"]);
+	  if (series_data.x.length>60) {
+	    series_data.x.splice(0,1);
+	    series_data.y.splice(0,1);
+	  } 
+	  series_data.x.push(time);
+	  series_data.y.push(datum.v);
+	  update = {x:[series_data.x], y:[series_data.y]}
+	  Plotly.update('measurementDiv1', update);
+	}
+	</script>
  
  
  </div>

@@ -1,4 +1,5 @@
 class PlantController < ApplicationController
+
   def index
     hierarchy_sql = <<~HEREDOC
 	  WITH RECURSIVE cte_connect_by AS ( 
@@ -33,9 +34,4 @@ class PlantController < ApplicationController
 
   end
 
-  def start_synth
-  end
-
-  def stop_synth
-  end
 end

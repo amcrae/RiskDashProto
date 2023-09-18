@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
+  get 'synth/restart_synth'
+  get 'synth/stop_synth'
   get 'plant/index'
-  get 'plant/start_synth'
-  get 'plant/stop_synth'
   
   resources :measurements
   resources :m_locations
