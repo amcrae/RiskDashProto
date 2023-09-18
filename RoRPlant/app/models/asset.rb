@@ -1,4 +1,4 @@
 class Asset < ApplicationRecord
-    has_one :segment
+    has_one :segment, required:false
 
 end
