@@ -1,5 +1,6 @@
 class Segment < ApplicationRecord
-  has_one :asset
+
+  belongs_to :asset
   
   attr_accessor :level 
   
