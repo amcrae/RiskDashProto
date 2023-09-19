@@ -47,14 +47,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_17_141001) do
 
   create_table "measurements", force: :cascade do |t|
     t.string "uuid"
-    t.integer "mlocation_id", null: false
+    t.integer "m_location_id", null: false
     t.datetime "timestamp"
     t.string "qtype"
     t.decimal "v", precision: 16, scale: 6
     t.string "uom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["mlocation_id"], name: "index_measurements_on_mlocation_id"
+    t.index ["m_location_id"], name: "index_measurements_on_m_location_id"
   end
 
   create_table "segment_connections", force: :cascade do |t|
@@ -81,7 +81,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_17_141001) do
   end
 
   add_foreign_key "m_locations", "segments"
-  add_foreign_key "measurements", "mlocations"
+  add_foreign_key "measurements", "m_locations"
   add_foreign_key "segments", "assets"
   add_foreign_key "segments", "segments", column: "parent_id"
 end

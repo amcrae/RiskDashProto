@@ -1,3 +1,3 @@
 class Measurement < ApplicationRecord
-  belongs_to :mlocation
+  belongs_to :m_location, required:false
 end

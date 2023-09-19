@@ -9,14 +9,14 @@
     out1 = Segment.new(parent_id:s.id, uuid:"1-2b01-2",shortname:'Outlet', segtype:'PIPE', operational:'RUNNING');
     out1.save();
     
-    ss1 = Segment.new(parent_id:s.id, uuid:"1-2dfe-1", shortname:'ss1', segtype:'LOGICAL', operational:'RUNNING');
+    ss1 = Segment.new(parent_id:s.id, uuid:"1-2dfe-0", shortname:'ss1', segtype:'LOGICAL', operational:'RUNNING');
     ss1.save()
     m1 = Segment.new(parent_id:ss1.id, uuid:"1-2dfe-2", shortname:'M1', segtype:'MOTOR', operational:'RUNNING');
     m1.save()
     p1 = Segment.new(parent_id:ss1.id, uuid:"1-2dfe-3", shortname:'P1', segtype:'PUMP', operational:'RUNNING');
     p1.save()
     
-    ss2 = Segment.new(parent_id:s.id, uuid:"1-2f33-1", shortname:'ss2', segtype:'LOGICAL', operational:'RUNNING');
+    ss2 = Segment.new(parent_id:s.id, uuid:"1-2f33-0", shortname:'ss2', segtype:'LOGICAL', operational:'RUNNING');
     ss2.save()
     m2 = Segment.new(parent_id:ss2.id, uuid:"1-2f33-2", shortname:'M2', segtype:'MOTOR', operational:'RUNNING');
     m2.save()
