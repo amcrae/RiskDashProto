@@ -83,21 +83,7 @@
 	<h3>Live Data (synthetic)</h3>
 	<script>
 	var job_launched = false;
-	  
-	  function start_data_thread() {
-	    if (job_launched) return false;
-	    sendData("GET", "/synth/restart_synth", null).then( 
-	      (data) => {
-	      	  console.log(data);
-	      }
-	    );
-	  }
-	</script>
-	
- 	<div style="text-align:right; margin-right:0; "> <a href="#restart" onclick="start_data_thread(); return false;">✇⏯ Start Synth Thread</a></div>
- 	
-	<div id="measurementDiv1"></div>
-	<script>
+
 	var chart_data = {
 	}
 	
@@ -111,6 +97,55 @@
 	  } 
 	  return chart_data[mloc_id]
 	}
+	  
+	function start_data_thread() {
+	    if (job_launched) return false;
+ 	    chart_data = { };
+	    update = {x:[ ], y:[ ]};
+	    Plotly.update('measurementDiv1', update);
+	    sendData("GET", "/synth/restart_synth", null).then( 
+	      (data) => {
+	      	  console.log("restart responded "+data);
+	      	  job_launched = true;
+	      }
+	    );
+
+	}
+
+	function reenable_launch() {
+	  document.getElementById("synth_launcher").style.display = 'inline';
+	  job_launched = false;
+	  launch_timeout_id = null;
+	}
+
+	var launch_timeout_id = null;
+	
+	function append_plot_data(datum) {
+	  job_launched = true;
+	  document.getElementById("synth_launcher").style.display = 'none';
+	  if (launch_timeout_id) clearTimeout(launch_timeout_id);
+	  launch_timeout_id = setTimeout(() => {
+	    reenable_launch();
+	  }, 11000);
+
+	  var now = new Date();
+	  var time = new Date; time.setTime(Date.parse(datum.timestamp));
+	  var series_data = get_chart_arrays_for(datum["m_location_id"]);
+	  if (series_data.x.length>60) {
+	    series_data.x.splice(0,1);
+	    series_data.y.splice(0,1);
+	  } 
+	  series_data.x.push(time);
+	  series_data.y.push(datum.v);
+	  update = {x:[series_data.x], y:[series_data.y]};
+	  Plotly.update('measurementDiv1', update);
+	}
+	</script>
+	
+ 	<div style="text-align:right; margin-right:0; "> 
+ 	  <span style="font-size:larger;">✇</span><a id="synth_launcher" href="#restart" onclick="start_data_thread(); return false;">⏯ Start synthesis task</a></div>
+	<div id="measurementDiv1"></div>
+	<script>
 
 	var m1 = [{
 	  x: [ ],
@@ -119,22 +154,6 @@
 	  line: {color: '#80CAF6'}
 	}]
 	Plotly.newPlot('measurementDiv1', m1);
-	</script>
-
-	<script>
-	function append_plot_data(datum) {
-	  //TODO: decode original float timestamp to JS Date
-	  var time = new Date();
-	  var series_data = get_chart_arrays_for(datum["mlocation_id"]);
-	  if (series_data.x.length>60) {
-	    series_data.x.splice(0,1);
-	    series_data.y.splice(0,1);
-	  } 
-	  series_data.x.push(time);
-	  series_data.y.push(datum.v);
-	  update = {x:[series_data.x], y:[series_data.y]}
-	  Plotly.update('measurementDiv1', update);
-	}
 	</script>
  
  
