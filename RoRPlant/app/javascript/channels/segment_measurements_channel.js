@@ -13,7 +13,7 @@ consumer.subscriptions.create({channel:"SegmentMeasurementsChannel", segment_uui
   received(data) {
     // Called when there's incoming data on the websocket for this channel
     window.console.log("Received "+JSON.stringify(data));
-    append_plot_data(data);
+    for (const m of data) append_plot_data(m);
   },
 
   send_measurement: function() {
