@@ -18,7 +18,7 @@ class Segment < ApplicationRecord
   VALID_OPERATIONAL_STATUSES = ['RUNNING', 'OFFLINE']
   
   # TODO: change to a FK into new table
-  VALID_SEGMENT_TYPES = ['LOGICAL', 'PIPE', 'SHAFT', 'MOTOR', 'PUMP', 'FLANGE']
+  VALID_SEGMENT_TYPES = ['LOGICAL', 'PIPE', 'SHAFT', 'MOTOR', 'PUMP', 'FLANGE', 'VALVE', 'CABLE', 'PLUG', 'SOCKET', 'SWITCH']
   
   validates :shortname, presence:true
   validates :operational, inclusion: { in: VALID_OPERATIONAL_STATUSES }
