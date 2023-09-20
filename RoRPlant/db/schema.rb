@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_20_020918) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_20_043049) do
   create_table "assets", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -57,6 +57,26 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_20_020918) do
     t.index ["m_location_id"], name: "index_measurements_on_m_location_id"
   end
 
+  create_table "risk_assessments", force: :cascade do |t|
+    t.string "uuid"
+    t.string "scope_segment_uuid"
+    t.integer "scope_segment_id", null: false
+    t.string "output_m_location_uuid"
+    t.integer "output_m_location_id", null: false
+    t.decimal "out_price", precision: 12, scale: 2
+    t.string "out_currency"
+    t.datetime "start_time"
+    t.string "lookahead"
+    t.datetime "end_time"
+    t.string "calc_alg"
+    t.float "calc_pof"
+    t.decimal "calc_risk", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["output_m_location_id"], name: "index_risk_assessments_on_output_m_location_id"
+    t.index ["scope_segment_id"], name: "index_risk_assessments_on_scope_segment_id"
+  end
+
   create_table "segment_connections", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -84,6 +104,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_20_020918) do
 
   add_foreign_key "m_locations", "segments"
   add_foreign_key "measurements", "m_locations"
+  add_foreign_key "risk_assessments", "m_locations", column: "output_m_location_id"
+  add_foreign_key "risk_assessments", "segments", column: "scope_segment_id"
   add_foreign_key "segment_connections", "segments", column: "from_segment_id"
   add_foreign_key "segment_connections", "segments", column: "to_segment_id"
   add_foreign_key "segments", "assets"
