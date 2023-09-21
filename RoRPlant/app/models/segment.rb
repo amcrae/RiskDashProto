@@ -1,5 +1,5 @@
 class Segment < ApplicationRecord
-  belongs_to :parent, class_name:"Segment", foreign_key:'parent_id'
+  belongs_to :parent, class_name:"Segment", foreign_key:'parent_id', optional:true
 
   belongs_to :asset, optional:true
   
