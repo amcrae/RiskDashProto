@@ -85,17 +85,22 @@ class SynthesiseDataJob < ApplicationJob
   def gen_measurement_for(mdist, simtime_s)
     phasedt = simtime_s + mdist[:phase];
     pt = phasedt/3600;  # perlin phase 
-    last_value = mdist[:avg_val] + (0.66*@n1d[pt] + 0.34*@n1d[pt*3.2] - 0.5);
-    # logger.debug(@last_value);
     mloc = @mlocs[mdist[:mloc_uuid]];
     if mloc == nil then raise StandardError.new("nil mloc from hash."); end;
+    seg = Segment.find(mloc.segment_id);
+    if seg.operational == 'RUNNING' then
+      last_value = mdist[:avg_val] + (0.66*@n1d[pt] + 0.34*@n1d[pt*3.2] - 0.5);
+    else
+      last_value = 0;
+    end
+    # logger.debug(@last_value);
     mmsg = Measurement.new(
-    	uuid: Random.uuid(),
-	m_location_id: mloc.id,
-	timestamp: @sim_start_time + simtime_s,
-	qtype: mdist[:template][:qtype],
-	v: last_value,
-	uom: mdist[:template][:uom]
+        uuid: Random.uuid(),
+	    m_location_id: mloc.id,
+	    timestamp: @sim_start_time + simtime_s,
+	    qtype: mdist[:template][:qtype],
+	    v: last_value,
+	    uom: mdist[:template][:uom]
     );
     return mmsg
   end
