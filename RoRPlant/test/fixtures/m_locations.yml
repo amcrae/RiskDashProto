@@ -1,11 +1,17 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  uuid: MyString
-  segment: one
-  shortname: MyString
+Production:
+  uuid: "1-2b01-2-1"
+  segment_id: 3
+  shortname: "Flowmeter"
 
-two:
-  uuid: MyString
-  segment: two
-  shortname: MyString
+M1current:
+  uuid: 1-2dfe-2-1
+  segment_id: 5
+  shortname: DC_In
+
+M2current:
+  uuid: 1-2f33-2-1
+  segment_id: 8
+  shortname: DC_In
+

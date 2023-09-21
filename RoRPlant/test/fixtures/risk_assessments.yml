@@ -1,17 +1,18 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-    uuid: "1-1-0",
-    scope_segment_uuid: "1-2b01-0",
-    scope_segment_id: 1,
-    output_m_location_uuid: "1-2dfe-3-1",
-    output_m_location_id: 3,
-    out_price: 100.00,
-    out_currency: "AUD",
-    start_time: Wed, 20 Sep 2023 05:47:01.540151000 UTC +00:00,
-    lookahead: "1 day",
-    end_time: Thu, 21 Sep 2023 05:47:01.540151000 UTC +00:00,
-    calc_alg: "basic_reliability",
-    calc_pof: 0.0021
-    calc_risk: 315
+risk1:
+  id: 1
+  uuid: "1-1-0"
+  scope_segment_uuid: "1-2b01-0"
+  scope_segment_id: 1
+  output_m_location_uuid: "1-2b01-2-1"
+  output_m_location: Production
+  out_price: 100.00
+  out_currency: "AUD"
+  start_time: Wed, 20 Sep 2023 05:47:01.540151000 UTC +00:00
+  lookahead: "1 day"
+  end_time: Thu, 21 Sep 2023 05:47:01.540151000 UTC +00:00
+  calc_alg: "basic_reliability"
+  calc_pof: 0.0021
+  calc_risk: 315
 

@@ -1,17 +1,101 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  uuid: MyString
-  shortname: MyString
-  segtype: MyString
-  segment: one
-  operational: MyString
-  asset: one
+plant:
+  id: 1
+  uuid: "1-2b01-0"
+  shortname: "Plant"
+  segtype: "LOGICAL"
+  # parent_id: nil
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.093499000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.093499000 UTC +00:00
 
-two:
-  uuid: MyString
-  shortname: MyString
-  segtype: MyString
-  segment: two
-  operational: MyString
-  asset: two
+inlet:
+  id: 2
+  uuid: "1-2b01-1"
+  shortname: "Inlet"
+  segtype: "PIPE"
+  parent_id: 1
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.099364000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.099364000 UTC +00:00
+
+outlet:
+  id: 3
+  uuid: "1-2b01-2"
+  shortname: "Outlet"
+  segtype: "PIPE"
+  parent_id: 1
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.105868000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.105868000 UTC +00:00
+  
+ss1:
+  id: 4
+  uuid: "1-2dfe-0"
+  shortname: "ss1"
+  segtype: "LOGICAL"
+  parent_id: 1
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.111046000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.111046000 UTC +00:00
+
+M1:
+  id: 5
+  uuid: "1-2dfe-2"
+  shortname: "M1"
+  segtype: "MOTOR"
+  parent_id: 4
+  operational: "RUNNING"
+  # asset_id: 1
+  created_at: Thu, 21 Sep 2023 03:18:38.116405000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.277554000 UTC +00:00>
+
+P1:
+  id: 6
+  uuid: "1-2dfe-3"
+  shortname: "P1"
+  segtype: "PUMP"
+  parent_id: 4
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.121783000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.121783000 UTC +00:00
+
+ss2:
+  id: 7
+  uuid: "1-2f33-0"
+  shortname: "ss2"
+  segtype: "LOGICAL"
+  parent_id: 1
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.127184000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.127184000 UTC +00:00
+
+M2:
+  id: 8
+  uuid: "1-2f33-2"
+  shortname: "M2"
+  segtype: "MOTOR"
+  parent_id: 7
+  operational: "RUNNING"
+  # asset_id: 2
+  created_at: Thu, 21 Sep 2023 03:18:38.132419000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.301077000 UTC +00:00
+
+P2:
+  id: 9
+  uuid: "1-2f33-3"
+  shortname: "P2"
+  segtype: "PUMP"
+  parent_id: 7
+  operational: "RUNNING"
+  # asset_id: nil
+  created_at: Thu, 21 Sep 2023 03:18:38.139305000 UTC +00:00
+  updated_at: Thu, 21 Sep 2023 03:18:38.139305000 UTC +00:00
+
