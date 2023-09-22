@@ -11,7 +11,7 @@ class PlantController < ApplicationController
 	     SELECT level + 1 AS level, (connect_by_path || '/' || s.shortname) AS connect_by_path, s.* 
 	       FROM cte_connect_by r INNER JOIN segments s ON  r.id = s.parent_id
 	  )
-	  SELECT level, cte_connect_by.id, segtype, cte_connect_by.shortname, parent_id, connect_by_path, 
+	  SELECT level, cte_connect_by.id, segtype, operational, cte_connect_by.shortname, parent_id, connect_by_path, 
 	  	 asset_id, assets.uuid as "asset_uuid", assets.shortname as "asset_name", assets.asset_type, assets.readiness
 	  FROM cte_connect_by LEFT OUTER JOIN assets ON cte_connect_by.asset_id = assets.id
 	  ORDER BY connect_by_path
@@ -25,7 +25,7 @@ class PlantController < ApplicationController
     tree_order = []
     for r in res do
       puts r;
-      seg = Segment.new(id:r["id"], shortname:r["shortname"], segtype:r["segtype"], parent_id:r["parent_id"]);
+      seg = Segment.new(id:r["id"], shortname:r["shortname"], segtype:r["segtype"], operational:r["operational"], parent_id:r["parent_id"]);
       seg.level = r["level"]
       seg.path = r["connect_by_path"]
       asset = nil
