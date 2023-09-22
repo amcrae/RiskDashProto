@@ -2,13 +2,13 @@
 	  <!-- asset.id <%=asset.id%> -->
 	  <% if asset.readiness=="SERVICEABLE" then %>
 	    <form action="/asset_status/sabotage" method="POST">
-	    <%= link_to(asset.shortname, asset) %> <%= asset.readiness %> 
+	    <%= link_to(asset.shortname, asset_path(asset)) %> <%= asset.readiness %> 
 	    <input type="hidden" name="asset_id" value="<%=asset.id%>"/>
 	    <input type="submit" value="💣"/>
 	    </form>
 	  <% else %>
 	    <form action="/asset_status/repair" method="POST">
-	    <%= link_to(asset.shortname, asset) %> <%= asset.readiness %> 
+	    <%= link_to(asset.shortname, asset_path(asset)) %> <%= asset.readiness %> 
 	    <input type="hidden" name="asset_id" value="<%=asset.id%>"/>
 	    <input type="submit" value="🔧"/>
 	    </form>
