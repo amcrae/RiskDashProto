@@ -20,12 +20,29 @@ The application domain chosen for this mini project is a prototype industrial pl
 
 4. `bin/rails db:create db:migrate db:seed`
 
+## Optionally Reconfigure Job Processing
+There are two ways to run the queued jobs: within the web server or in an external worker pool process.  
+By default this project is configured to make starting the demo slightly easier by requiring only one process (the 'puma' web server) to be executed. However starting the job workers inside the web server means both puma processes have to be killed (with `kill -9`) to stop ruby, which is less convenient.
+
+ * Edit the file `RoRPlant/app/controllers/synth_controller.rb`
+ * Set the constant `USE_SYNTH_THREAD_STYLE` to one of the strings in the `SYNTH_THREAD_STYLES` array.
+ * If you choose `EXTERNAL_PROCESS` you need to execute `delayed_job run` in a separate terminal window before running the rails server. `RoRPlant/bin/delayed_job run`
 
 ## Start
 
 1. `cd RiskDashProto/RoRPlant`
 
-2. `bin/rails server`
+2. If you configured SynthController with `EXTERNAL_PROCESS`, start Delayed Job in a separate console (see above).
 
-3. Browse to http://127.0.0.1:3000
+3. `bin/rails server`
+
+4. Browse to http://127.0.0.1:3000
+
+## View the example system
+
+1. Note the assets can be failed or repaired by clicking the bomb or wrench buttons respectively.
+2. Start the Synthesise Data task to begin generated fake motor data from Perlin noise.
+3. After the front end has subscribed (takes a few seconds the first time) the live data will be charted in a moving window.
+4. Failing the 1stMotor asset (currently) results in zeroes being sent as the data (may change in future version).
+5. The data synthesis is coded to stop by itself after a while.
 
