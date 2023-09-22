@@ -17,28 +17,42 @@ class DataStreamerJob < ApplicationJob
     end
   end
 
+
+
+
   def perform(*args)
     Rails.logger.info("DataStreamer started!");
-    latest = Measurement.maximum("created_at");
+    latest_m = Measurement.maximum("created_at");
+    latest_s = Segment.maximum("updated_at");
     while @keep_running
-  	nothing_new = true;
-  	mlist = []
-  	begin
-  	   mlist = Measurement.where("created_at > ? ", latest );
-  	   puts "#(new measurements) = ", mlist.length;
-  	   if mlist.length > 0 then
-  	     nothing_new = false;
-  	   else
-  	     sleep(1.0);
-  	     # puts "#{Time.now()} DataStreamer tick";
-  	   end
-  	end while nothing_new;
-  	SegmentMeasurementsChannel.send_measurements(mlist);
-  	for m in mlist
-  	  if m.created_at > latest then
-  	    latest = m.created_at
-  	  end
-  	end
+        nothing_new = true;
+        mlist = []
+        begin
+            mlist = Measurement.where("created_at > ? ", latest_m );
+            # puts "#(new measurements) = ", mlist.length;
+            segs = Segment.where("updated_at > ? ", latest_s);
+            if mlist.length > 0 or segs.length > 0 then
+             nothing_new = false;
+            else
+             sleep(0.25);
+             # puts "#{Time.now()} DataStreamer tick";
+            end
+      	end while nothing_new;
+      	if mlist.length > 0 then SegmentMeasurementsChannel.send_measurements(mlist); end;
+      	if segs.length > 0 then SegmentStatusChannel.send_statuses(segs); end;
+      	
+      	for m in mlist
+      	  if m.created_at > latest_m then
+      	    latest_m = m.created_at
+      	  end
+      	end
+      	
+      	for s in segs
+      	  if s.updated_at > latest_s then
+      	    latest_s = s.updated_at
+      	  end
+      	end
+      	    
     end
   end
   

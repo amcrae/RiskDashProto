@@ -32,6 +32,19 @@
  	vertical-align:top;
  	border: solid 2px black;
  }
+
+ 
+span.stat_offline {
+  font-size: small;
+  color: yellow;
+  background-color: black;
+}
+
+span.stat_running {
+  font-size: small;
+  background-color: lightcyan;
+}
+
  
 #diagram_pane {
 	display: table-cell;

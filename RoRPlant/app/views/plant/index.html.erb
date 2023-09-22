@@ -39,6 +39,23 @@
 	      }
 	    );
 	  }
+	  
+	  var update_seg_status_elem = function(seg) {
+	     e = document.getElementById("seg_status_"+seg.id);
+	     if (e == null) return;
+	     e.textContent = seg.operational;
+	     if (seg.operational == 'RUNNING') {
+	        e.className = 'stat_running';
+	     } else {
+	        e.className = 'stat_offline';
+	     }
+	  }
+	  
+	  function update_tree_statuses(data) {
+        for (const seg_status of data) {
+          update_seg_status_elem(seg_status);
+        }
+	  }
   
 </script>
 
@@ -54,12 +71,13 @@
 	 %>
 	 <div data-path="<%= seg.path %>">
 	 <table><tr>
-	  <td> <span style="margin-left:<%= (1.2 * seg.level).round(1) %>em;">┣</span> 
+	  <td> <span style="margin-left:<%= (1.2 * (seg.level-1)).round(1) %>em;">┣</span> 
 	  <td><%= link_to("#"+seg.id.to_s(), segment_path(seg))%> 
 	  <td><%= seg.segtype %> 
 	  <td><%= seg.shortname %> 
 	  <!-- <td>^<%= seg.parent_id %> -->
-	  <td> 🚦
+	  <% stat_class = if seg.operational == 'RUNNING' then 'stat_running' else 'stat_offline' end %>
+	  <td><span id="seg_status_<%=seg.id %>" class="<%=stat_class%>"> <%= seg.operational %> </span>
 	  <td>
 	  <% if asset != nil then %>
 	   <%= render partial: "asset_status/show", locals: { asset: asset, asset_id: seg.asset_id } %>

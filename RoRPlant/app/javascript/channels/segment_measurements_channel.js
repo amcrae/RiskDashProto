@@ -3,7 +3,7 @@ import consumer from "channels/consumer"
 consumer.subscriptions.create({channel:"SegmentMeasurementsChannel", segment_uuid:"1-2b01-0"}, {
   connected() {
     // Called when the subscription is ready for use on the server
-    window.console.log("Subscribed!")
+    window.console.log("Subscribed! to SegmentMeasurementsChannel")
   },
 
   disconnected() {
