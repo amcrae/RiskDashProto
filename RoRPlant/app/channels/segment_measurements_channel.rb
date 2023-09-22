@@ -48,12 +48,11 @@ class SegmentMeasurementsChannel < ApplicationCable::Channel
     # Each scope has its own batch of measurements.
     # puts "notify_scopes", notify_scopes;
     for scope,batch in notify_scopes
-    	# print(scope, '<---', batch, "\n");
+        # print(scope, '<---', batch, "\n");
         for chan in scope
-  	  ActionCable.server.broadcast(chan, batch);
-  	end
-     end
-    
+            ActionCable.server.broadcast(chan, batch);
+        end
+    end
   end
   
 end
