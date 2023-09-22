@@ -1,4 +1,3 @@
 <div id="<%= dom_id segment %>">
- #<%= segment.id %> <%= segment.uuid %>  <%= segment.segtype %> <%= segment.shortname %>  
- <%= if segment.parent_id? then "^"+String(segment.parent_id) else "" end %>
+ <span>#<%= segment.id %></span> <span>uuid:<%= segment.uuid %></span> <span><%= segment.segtype %></span> <span><%= segment.shortname %></span>  parent_id: <%= if segment.parent_id? then "^"+String(segment.parent_id) else "(none)" end %>
 </div>
