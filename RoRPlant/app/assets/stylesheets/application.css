@@ -45,3 +45,19 @@
 	overflow:scroll;
 }
 
+#risk_pane {
+ 	padding: 1em;
+ 	display: table-cell;
+ 	width: 40%;
+ 	vertical-align:top;
+ 	border: solid 2px black;
+}
+
+#live_data_pane {
+	display: table-cell;
+	width: auto;
+	padding: 1em;
+ 	vertical-align:top;
+ 	border: solid 2px black;
+}
+
