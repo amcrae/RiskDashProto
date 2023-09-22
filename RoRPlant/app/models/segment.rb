@@ -25,4 +25,16 @@ class Segment < ApplicationRecord
   validates :operational, inclusion: { in: VALID_OPERATIONAL_STATUSES }
   validates :segtype, inclusion: { in: VALID_SEGMENT_TYPES }
   
+  
+  def Segment.get_uuids_to_root(seg_id)
+    answer = [];
+    parent_segid = seg_id;
+    while parent_segid != nil
+      s = Segment.find(parent_segid);
+      answer.push(s.uuid);
+      parent_segid = s.parent_id;
+    end
+    return answer
+  end
+    
 end
