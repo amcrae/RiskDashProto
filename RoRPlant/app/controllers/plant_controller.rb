@@ -12,7 +12,7 @@ class PlantController < ApplicationController
 	       FROM cte_connect_by r INNER JOIN segments s ON  r.id = s.parent_id
 	  )
 	  SELECT level, cte_connect_by.id, segtype, cte_connect_by.shortname, parent_id, connect_by_path, 
-	  	 asset_id, assets.uuid as "asset_uuid", assets.shortname as "asset_name", assets.readiness
+	  	 asset_id, assets.uuid as "asset_uuid", assets.shortname as "asset_name", assets.asset_type, assets.readiness
 	  FROM cte_connect_by LEFT OUTER JOIN assets ON cte_connect_by.asset_id = assets.id
 	  ORDER BY connect_by_path
     HEREDOC
@@ -31,7 +31,7 @@ class PlantController < ApplicationController
       asset = nil
       if r["asset_id"] != nil then
         Rails.logger.debug( { id: r["asset_id"], uuid: r["asset_uuid"], shortname: r["asset_name"], readiness: r["readiness"] } );
-        asset = Asset.new(id: r["asset_id"], uuid: r["asset_uuid"], shortname: r["asset_name"], readiness: r["readiness"] );
+        asset = Asset.new(id: r["asset_id"], uuid: r["asset_uuid"], shortname: r["asset_name"], asset_type:r["asset_type"], readiness: r["readiness"] );
         Rails.logger.debug([asset, asset.id, asset.uuid].join(", "));
       end
       pair = {seg: seg, asset: asset};
