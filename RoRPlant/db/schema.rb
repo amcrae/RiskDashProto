@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_20_043049) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_24_004732) do
   create_table "assets", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -19,6 +19,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_20_043049) do
     t.float "pof"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "max_capacity"
+    t.string "perf_coeffs"
   end
 
   create_table "delayed_jobs", force: :cascade do |t|
@@ -40,6 +42,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_20_043049) do
     t.string "uuid"
     t.integer "segment_id", null: false
     t.string "shortname"
+    t.string "qtype"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["segment_id"], name: "index_m_locations_on_segment_id"
@@ -98,6 +101,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_20_043049) do
     t.integer "asset_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "cur_performance"
+    t.string "control_theory"
     t.index ["asset_id"], name: "index_segments_on_asset_id"
     t.index ["parent_id"], name: "index_segments_on_parent_id"
   end
