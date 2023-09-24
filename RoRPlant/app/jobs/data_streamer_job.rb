@@ -22,7 +22,7 @@ class DataStreamerJob < ApplicationJob
 
   def perform(*args)
     Rails.logger.info("DataStreamer started!");
-    latest_m = Measurement.maximum("created_at");
+    latest_m = Measurement.maximum("created_at") or Time.now();
     latest_s = Segment.maximum("updated_at");
     while @keep_running
         nothing_new = true;
