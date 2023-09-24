@@ -4,6 +4,7 @@ class CreateMLocations < ActiveRecord::Migration[7.0]
       t.string :uuid
       t.references :segment, null: false, foreign_key: true
       t.string :shortname
+      t.string :qtype
 
       t.timestamps
     end
