@@ -91,7 +91,7 @@ class SynthesiseDataJob < ApplicationJob
     if seg.operational == 'RUNNING' then
       last_value = mdist[:avg_val] + (0.66*@n1d[pt] + 0.34*@n1d[pt*3.2] - 0.5);
     else
-      last_value = 0;
+      last_value = nil;
     end
     # logger.debug(@last_value);
     mmsg = Measurement.new(
@@ -135,7 +135,7 @@ class SynthesiseDataJob < ApplicationJob
     	end
     	# prevent database from growing too large for demo.
     	# TODO: would not do this in a long-lived application.
-    	Measurement.destroy_by(updated_at: ...(2.minutes.ago) );
+    	Measurement.destroy_by(updated_at: ...(5.minutes.ago) );
   	sleep(1);
   	simtime_s = simtime_s + SIM_TIME_PER_SECOND;
     end
