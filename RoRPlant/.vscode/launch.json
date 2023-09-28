@@ -1,0 +1,64 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "rdbg",
+            "name": "rdbg Debug current file",
+            "request": "launch",
+            "script": "",
+            "askParameters": true
+        },
+        {
+            "type": "rdbg",
+            "name": "rdbg Attach debugger",
+            "request": "attach"
+        },
+        {
+            "type": "rdbg",
+            "name": "Minitest with current file",
+            "request": "launch",
+            "script": "-Itest ${workspaceFolder}/${command:AskForProgramName}",
+            "command": "${workspaceRoot}/bin/rails",
+            "args": ["${file}:${lineNumber}"],
+            "askParameters": false
+        },
+        {
+            "name": "Minitest Rails with current file",
+            "type": "rdbg",
+            "request": "launch",
+            "command": "${workspaceRoot}/bin/rails",
+            "script": "test",
+            "args": ["${file}:${lineNumber}"],
+            "askParameters": false
+        },
+
+
+        {
+            "type": "ruby_lsp",
+            "name": "ruby Debug",
+            "request": "launch",
+            "program": "ruby ${file}"
+        },
+        {
+            "type": "ruby_lsp",
+            "name": "Debug w/test",
+            "request": "launch",
+            "program": "ruby -Itest ${relativeFile}"
+        },
+        {
+            "type": "ruby_lsp",
+            "name": "Debugger (attach)",
+            "request": "attach"
+        },
+        {
+            "type":"ruby_lsp",
+            "name": "Rails Test",
+            "request": "launch",
+            "program": "bin/rails test ${relativeFile}"
+        }
+        
+    ]
+}
