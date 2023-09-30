@@ -8,7 +8,8 @@
             "type": "rdbg",
             "name": "rdbg Debug current file",
             "request": "launch",
-            "script": "",
+            "script": "${file}",
+            "args": [],
             "askParameters": true
         },
         {
