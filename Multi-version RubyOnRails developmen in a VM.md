@@ -41,14 +41,14 @@
 ## Phase 3, Developer Tools setup.
 (quirky and fiddly)
 1. Install git and then run the `git config --global` to set up.
-  1. `git config --global --add user.name "My Name"`
-  2. `git config --global --add user.email "my.email@example.com"`
-  3. git remote repo credentials: Optionally copy your github SSH private key into `~/.ssh/` so can then use `ssh-agent` and `ssh-add ~/.ssh/id_ed25519` for authentication to GH.
+   1. `git config --global --add user.name "My Name"`
+   2. `git config --global --add user.email "my.email@example.com"`
+   3. git remote repo credentials: Optionally copy your github SSH private key into `~/.ssh/` so can then use `ssh-agent` and `ssh-add ~/.ssh/id_ed25519` for authentication to GH.
 
 2. Install a ruby version manager such as rbenv. https://github.com/rbenv/rbenv#basic-git-checkout
-  0. Uninstall the OS package manager's ruby-build and rbenv as they are probably outdated.
-  1. `git clone https://github.com/rbenv/rbenv.git ~/.rbenv`
-  2. `git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build`
+   0. Uninstall the OS package manager's ruby-build and rbenv as they are probably outdated.
+   1. `git clone https://github.com/rbenv/rbenv.git ~/.rbenv`
+   2. `git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build`
 
 3. Install a ruby version supported by Ruby-LSP, in this case 3.2.2 was used, plus extras.
    1. `sudo apt-get install libyaml`
@@ -56,33 +56,33 @@
    3. `gem install psych`
    4. `rbenv install 3.2.2`
    5. `rbenv global 3.2.2`
+   6. Install bundler package. For each ruby version,  
+      activate it in shell with `rbenv shell _version_` then run `gem install bundle` .
 
-4. Get the linux installer .tar.gz for openjdk, check the message digest, and unpack. 
-   This can go under the developer user's home directory. e.g. in `~` these...
-
-  1. `sha256sum ./Downloads/openjdk-21_linux-x64_bin.tar.gz`
-  2. `tar --extract -f ./Downloads/openjdk-21_linux-x64_bin.tar.gz -z`
-
+4. Get the linux installer .tar.gz for openjdk, check the message digest, and unpack.  
+   This can go under the developer user's home directory. e.g. in `~` these commands...
+   1. `sha256sum ./Downloads/openjdk-21_linux-x64_bin.tar.gz`
+   2. `tar --extract -f ./Downloads/openjdk-21_linux-x64_bin.tar.gz -z`
+   
    ...would create `~/jdk-21/` java home because of the folder built in to the archive.
 
-5. Get the linux installer (.deb in this case) for VS Code. Can be downloaded within the VM with firefox or curl if you copy the URL from microsoft site.
+5. VS Code Installation.
+   0. Get the linux installer (.deb in this case) for VS Code. Can be downloaded within the VM with firefox or curl if you copy the URL from [the Microsoft site](https://code.visualstudio.com/Download).
+   1. Install VS Code using GDebi or similar.
 
-6. Install VS Code using GDebi or similar.
-
-7. Start VS Code and install language related extensions.
+6. Start VS Code and install language related extensions.
   * "Ruby LSP" from Shopify.
-  * "VSCode rdbg Ruby Debugger" from Koichi Sasada.
+  * "VSCode **rdbg** Ruby Debugger" from Koichi Sasada.
   * "Python" from Microsoft.
   * "Extension Pack for Java" from Microsoft.
 
-8. For each ruby version, activate it in shell with `rbenv shell 1.2.3` then run `gem install bundle`.
-
 9. Fiddly setup for Ruby LSP and rbenv which has to be done per project.
-  1. `cd` to the project code root dir which has Gemfile in it,
-  2. Ensure the ruby-version file is created for the right version with e.g. `rbenv local 1.2.3`
-  3. run `bundle install` to setup all packages required for that project.
-  4. Create a folder (e.g. `dev-config`) as a sibling to the project root folder for holding the Ruby LSP Gemfile
-  5. Create a Gemfile with the content suggested by the Ruby-LSP project repo. ie
+   1. `cd` to the project code root dir. This is the one with Gemfile in it.
+   2. Ensure the `.ruby-version` file is created naming the right version, with e.g. `rbenv local 1.2.3` .
+   3. run `bundle install` to setup all packages required for that project (from Gemfile).
+   4. Create a folder (e.g. `dev-config`) as a sibling to the project root folder for holding the Ruby LSP Gemfile
+   5. Create a Gemfile with the content suggested by the Ruby-LSP project repo. ie
+     ```
         source "https://rubygems.org"
         git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
@@ -93,26 +93,27 @@
           gem "ruby-lsp", require: false
           gem "debug", platforms: %i[ mri mingw x64_mingw ]
         end
-  6. Create a `.ruby-version` file in the same dir with just 3.2.2 on the first line.
-  7. switch to ruby 3 (`rbenv shell 3.2.2`), go to the `dev-config` folder, then run `bundle install` there.
-  8. I had a problem with a version of 'io-console' 5.10 missing from the rubygems site, but this may not be a reoccurring problem. My workaround was to hack the `Gemfile.lock` and change which version it depended on from 5.10 to 5.11, then re-run `bundle install`
-  9. Start VS Code and open the project source root folder. Create `launch.json` entries for rdbg.
-    * The simple debug with dbg launch will work for simple ruby programs.
-    * The example given for rdbg on https://code.visualstudio.com/docs/languages/ruby will work for Rails tests
+     ```
+   6. Create a `.ruby-version` file in the same dir with just 3.2.2 on the first line.
+   7. switch to ruby 3 (`rbenv shell 3.2.2`), go to the `dev-config` folder, then run `bundle install` there.
+   8. I had a problem with a version of 'io-console' 5.10 missing from the rubygems site, but this may not be a reoccurring problem. My workaround was to hack the `Gemfile.lock` and change which version it depended on from 5.10 to 5.11, then re-run `bundle install`
+   9. Start VS Code and open the project source root folder. Create `launch.json` entries for rdbg.
+      * The simple debug with dbg launch will work for simple ruby programs.
+      * The example given for rdbg on https://code.visualstudio.com/docs/languages/ruby will work for Rails tests
 
-    1. Go to the Run/Debug view.
-    2. In the top of that pane click the drop-down box and pick Create launch json...
-    3. Type 'rdbg' to narrow the search and pick Debug with rdbg
-    4. Whatever it generates can be customised according to microsoft's suggestion:
-```json
-    {
-      "name": "Minitest - current line",
-      "type": "rdbg",
-      "request": "launch",
-      "command": "${workspaceRoot}/bin/rails",
-      "script": "test",
-      "args": ["${file}:${lineNumber}"],
-      "askParameters": false
-    },
-```
+      1. Go to the Run/Debug view.
+      2. In the top of that pane click the drop-down box and pick Create launch json...
+      3. Type 'rdbg' to narrow the search and pick Debug with rdbg
+      4. Whatever it generates can be customised according to microsoft's suggestion:
+         ```json
+            {
+              "name": "Minitest - current line",
+              "type": "rdbg",
+              "request": "launch",
+              "command": "${workspaceRoot}/bin/rails",
+              "script": "test",
+              "args": ["${file}:${lineNumber}"],
+              "askParameters": false
+            },
+         ```
 
