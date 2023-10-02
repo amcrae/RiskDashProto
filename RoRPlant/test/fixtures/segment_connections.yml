@@ -1,3 +1,49 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
+#  SegmentConnection.new(uuid:'1-1-1', from_segment_id:m1.id, to_segment_id:p1.id, shortname:'Driveshaft', segtype:'SHAFT').save()
+M1toP1:
+  uuid: "1-1-1"
+  from_segment_id: 5
+  to_segment_id: 6
+  shortname: Driveshaft
+  segtype: SHAFT
 
+# SegmentConnection.new(uuid:'1-2-1', from_segment_id:m2.id, to_segment_id:p2.id, shortname:'Driveshaft', segtype:'SHAFT').save()
+M2toP2:
+  uuid: "1-2-1"
+  from_segment_id: 8
+  to_segment_id: 9
+  shortname: Driveshaft
+  segtype: SHAFT
+
+# SegmentConnection.new(uuid:'1-1-0', from_segment_id:in1.id, to_segment_id:p1.id, shortname:'in', segtype:'PIPE').save()
+InToP1:
+  uuid: "1-1-0"
+  from_segment_id: 2
+  to_segment_id: 6
+  shortname: in
+  segtype: PIPE
+
+# SegmentConnection.new(uuid:'1-1-9', from_segment_id:p1.id, to_segment_id:out1.id, shortname:'out', segtype:'PIPE').save()
+P1toOut:
+  uuid: "1-1-9"
+  from_segment_id: 6
+  to_segment_id: 3
+  shortname: out
+  segtype: PIPE
+
+# SegmentConnection.new(uuid:'1-2-0', from_segment_id:in1.id, to_segment_id:p2.id, shortname:'in', segtype:'PIPE').save()
+InToP2:
+  uuid: "1-2-0"
+  from_segment_id: 2
+  to_segment_id: 9
+  shortname: "in"
+  segtype: PIPE
+ 
+# SegmentConnection.new(uuid:'1-2-9', from_segment_id:p2.id, to_segment_id:out1.id, shortname:'out', segtype:'PIPE').save()
+P2toOut:
+  uuid: "1-2-9"
+  from_segment_id: 9
+  to_segment_id: 3
+  shortname: out 
+  segtype: PIPE
