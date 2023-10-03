@@ -120,6 +120,31 @@ class SystemGraph
     return answer
   end
 
+  def bfs_node_visitor(start_seg, result, multivisit:false, &block)
+    if ! block_given? then
+      raise ArgumentError.new("Need a code block to execute on each node")
+    end
+    discovery_queue  = []
+    start = find_node(segment:start_seg)
+    discovery_queue.push([nil,start])
+    seg_ids = {}
+    order = 0
+    while discovery_queue.length>0
+        e, n = discovery_queue.shift();
+        if seg_ids.has_key?(n.seg.uuid) && !multivisit then 
+          next 
+        end
+        seg_ids[n.seg.uuid] = order
+        block.call(e, n, result)
+        next_links = self.out_edges(n.seg)
+        for link in next_links
+          n2 = find_node(segment:link.conn.to_seg)
+          discovery_queue.push([link,n2]);
+        end
+        order += 1
+    end
+    return result
+  end
 
   def SystemGraph.load_dependencies_graph(output_segment_uuid)
     g = SystemGraph.new()
@@ -136,9 +161,7 @@ class SystemGraph
             seg_ids[seg.parent.id] = true
         end
         intos = SegmentConnection.where(to_segment_id: seg.id)
-        puts intos
         for link in intos
-           puts link
            g.add_edge(link);
            discovery_queue.push(link.from_seg);
         end

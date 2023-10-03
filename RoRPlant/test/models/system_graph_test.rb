@@ -79,6 +79,16 @@ class SystemGraphTest < ActiveSupport::TestCase
         assert @g.in_edges(@a).size() == 0
     end
 
+    def test_bfs_nodes()
+        self.setup_diamond();
+        init_r = [];
+        res = @g.bfs_node_visitor(@a, init_r, multivisit:false) { | e, n, r |
+            r << "#{n.seg.uuid} via #{e ? e.conn.shortname : nil}."
+        }
+        assert res.size == 4
+        assert res[3].starts_with?("1-4 ")
+    end
+
     def test_load_dependencies()
         g = SystemGraph.load_dependencies_graph("1-2b01-2")
         puts "g is #{g}"
