@@ -34,6 +34,7 @@ class SystemGraph
     @nodes = []
     @edges = []
     @gobjects_by_uuid = {}  # graph objects by the UUID of the system entity they hold.
+    @nodes_by_uuid = {}
   end
 
   def to_s()
@@ -56,6 +57,7 @@ class SystemGraph
     end
     n = SysNode.new(seg=segment,data=data)
     @nodes.push(n)
+    @nodes_by_uuid[segment.uuid] = n
     @gobjects_by_uuid[segment.uuid] = segment
     return true
   end
@@ -63,7 +65,19 @@ class SystemGraph
   def remove_node(segment)
     node = @gobjects_by_uuid[segment.uuid]
     @gobjects_by_uuid.delete(segment.uuid)
+    @nodes_by_uuid.delete(segment.uuid)
     @nodes.delete(node)
+  end
+
+  def find_node(uuid:nil, segment:nil)
+    if (uuid==nil) == (segment==nil) then
+      raise ArgumentError.new("Must have either Segment object or the uuid, not both")
+    end
+    if uuid != nil then
+      return @nodes_by_uuid[uuid]
+    elsif segment!=nil then
+      return @nodes_by_uuid[segment.uuid]
+    end
   end
 
   def add_edge(seg_conn, data={})
@@ -79,7 +93,7 @@ class SystemGraph
   
   def find_edge_by_ends(from_seg, to_seg)
     for c in @edges
-        if c.conn.from_seg == from_seg and c.conn.from_seg == to_seg
+        if c.conn.from_seg == from_seg and c.conn.to_seg == to_seg
             return c
         end
     end
