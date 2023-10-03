@@ -20,7 +20,9 @@ class Segment < ApplicationRecord
   @path = nil
   attr_accessor :path
 
-  VALID_OPERATIONAL_STATUSES = ['RUNNING', 'OFFLINE']
+  OP_RUNNING = 'RUNNING'
+  OP_OFFLINE = 'OFFLINE'
+  VALID_OPERATIONAL_STATUSES = [Segment::OP_RUNNING, Segment::OP_OFFLINE]
   
   # TODO: change to a FK into new table
   # As these should come from an external source/table that could grow in size, the possibility of filling the ruby Symbol table arises.

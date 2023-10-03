@@ -28,16 +28,16 @@ class SystemGraph
     end
   end
 
-  attr_accessor :nodes, :connections
+  attr_accessor :nodes, :edges
 
   def initialize()
     @nodes = []
-    @connections = []
+    @edges = []
     @gobjects_by_uuid = {}  # graph objects by the UUID of the system entity they hold.
   end
 
   def to_s()
-    return "SystemGraph#{self.object_id}(Nodes:#{@nodes},Edges:#{@connections})"
+    return "SystemGraph#{self.object_id}(Nodes:#{@nodes},Edges:#{@edges})"
   end
 
   def uuid_to_object(uuid)
@@ -73,13 +73,13 @@ class SystemGraph
         return 
     end
     edge = SysEdge.new(seg_conn, data)
-    @connections.push(edge)
+    @edges.push(edge)
     @gobjects_by_uuid[seg_conn.uuid] = edge
   end
   
   def find_edge_by_ends(from_seg, to_seg)
-    for c in @connections
-        if c.from_seg == from_seg and c.from_seg == to_seg
+    for c in @edges
+        if c.conn.from_seg == from_seg and c.conn.from_seg == to_seg
             return c
         end
     end
@@ -88,8 +88,8 @@ class SystemGraph
 
   def out_edges(segment)
     answer = []
-    for c in @connections
-        if c.from_seg.uuid == segment.uuid
+    for c in @edges
+        if c.conn.from_seg.uuid == segment.uuid
             answer.push(c)
         end
     end
@@ -98,8 +98,8 @@ class SystemGraph
 
   def in_edges(segment)
     answer = []
-    for c in @connections
-        if c.to_seg.uuid == segment.uuid
+    for c in @edges
+        if c.conn.to_seg.uuid == segment.uuid
             answer.push(c)
         end
     end
