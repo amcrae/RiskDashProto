@@ -7,6 +7,7 @@
         {
             "type": "rdbg",
             "name": "rdbg Debug current file",
+            // "rdbgPath": "~/.rbenv/shims/rdbg",
             "request": "launch",
             "script": "${file}",
             "args": [],
@@ -19,7 +20,7 @@
         },
         {
             "type": "rdbg",
-            "name": "Minitest with current file",
+            "name": "rdbg Minitest with current file",
             "request": "launch",
             "script": "-Itest ${workspaceFolder}/${command:AskForProgramName}",
             "command": "${workspaceRoot}/bin/rails",
@@ -27,7 +28,7 @@
             "askParameters": false
         },
         {
-            "name": "Minitest Rails with current file",
+            "name": "rdbg Minitest Rails with current file",
             "type": "rdbg",
             "request": "launch",
             "command": "${workspaceRoot}/bin/rails",
