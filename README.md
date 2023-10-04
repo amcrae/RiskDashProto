@@ -43,6 +43,6 @@ By default this project is configured to make starting the demo slightly easier 
 1. Note the assets can be failed or repaired by clicking the bomb or wrench buttons respectively.
 2. Start the Synthesise Data task to begin generated fake motor data from Perlin noise.
 3. After the front end has subscribed (takes a few seconds the first time) the live data will be charted in a moving window.
-4. Failing the 1stMotor asset (currently) results in zeroes being sent as the data (may change in future version).
+4. Failing the 1stMotor asset results in nulls being sent as the data.
 5. The data synthesis is coded to stop by itself after a while.
 
