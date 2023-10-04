@@ -1,3 +1,5 @@
+require 'plant_sim'
+
 # Not actually intended to run as an ActiveJob.
 # It needs to communicate with the web clients and this is quicker to implement as a thread
 #  rather than set up a separate client comms channel to a secondary process.
