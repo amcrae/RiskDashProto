@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_24_004732) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_06_044441) do
   create_table "assets", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -21,6 +21,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_24_004732) do
     t.datetime "updated_at", null: false
     t.float "max_capacity"
     t.string "perf_coeffs"
+    t.decimal "repaircost", precision: 12, scale: 2
+    t.float "repairdelay_sec"
+    t.float "decay_factor"
   end
 
   create_table "delayed_jobs", force: :cascade do |t|

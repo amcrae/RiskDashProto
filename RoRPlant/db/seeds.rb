@@ -50,6 +50,7 @@
     m1 = Segment.find_by(uuid:"1-2dfe-2");
     m1a = Asset.new(
         uuid:"1-2dfe-201", shortname:"1stMotor", asset_type:"MOTOR", pof:0.20, max_capacity:31.4,
+        repaircost: 1000.00, repairdelay_sec: 3600, decay_factor: 0.0001,
         perf_coeffs:'{"current --> angular velocity":3.14, "efficiency":0.85}', readiness:"SERVICEABLE"
     );
     m1a.save();
@@ -59,6 +60,7 @@
     p1 = Segment.find_by(uuid:"1-2dfe-3");
     p1a = Asset.new(
         uuid:"1-2dfe-3-101", shortname:"Pumpomatic1", asset_type:"PUMP", pof:0.001, max_capacity:10.0,
+        repaircost: 1000.00, repairdelay_sec: 3600, decay_factor: 0.0001,
         perf_coeffs:'{"angular velocity --> volumetric flow":2.0, "efficiency":0.92 }', readiness:"SERVICEABLE"
     );
     p1a.save();
@@ -67,6 +69,7 @@
 
     m2 = Segment.find_by(uuid:"1-2f33-2");
     m2a = Asset.new(uuid:"1-2f33-202", shortname:"Motor#2", asset_type:"MOTOR", pof:0.25, max_capacity:31.4, 
+        repaircost: 1000.00, repairdelay_sec: 3600, decay_factor: 0.0001,
         perf_coeffs:'{"current --> angular velocity":3.14, "efficiency":0.85}', readiness:"SERVICEABLE"
     );
     m2a.save();
@@ -75,7 +78,8 @@
 
     p2 = Segment.find_by(uuid:"1-2f33-3");
     p2a = Asset.new(
-        uuid:"1-2f33-3-201", shortname:"ACME_P100", asset_type:"PUMP", pof:0.002, max_capacity:10.0,
+        uuid:"1-2f33-3-201", shortname:"ACME_P100", asset_type:"PUMP", pof:0.002, max_capacity:10.0, 
+        repaircost: 800.00, repairdelay_sec: 1800, decay_factor: 0.0002,
         perf_coeffs:'{"angular velocity --> volumetric flow":2.0, "efficiency":0.90 }', readiness:"SERVICEABLE"
     );
     p2a.save();
