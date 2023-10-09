@@ -11,15 +11,18 @@ class SystemGraph
     include Observable
     attr_accessor :seg, :data
 
-    def initialize(seg, data = {})
+    def initialize(seg, data: {})
       @seg = seg
       @data = data
     end
 
     def to_s
-      "SysNode(#{@seg},#{@data})"
+      "SysNode(seg=#{@seg.inspect()},data=#{@data}). "
     end
 
+    def inspect
+      return self.to_s()
+    end
   end
 
   class SysEdge
@@ -27,13 +30,17 @@ class SystemGraph
     include Observable
     attr_accessor :conn, :data
 
-    def initialize(conn, data = {})
+    def initialize(conn, data: {})
       @conn = conn
       @data = data
     end
 
     def to_s
-      "SysEdge(#{@conn},#{@data})"
+      "SysEdge(conn=#{@conn.inspect()},data=#{@data}). "
+    end
+
+    def inspect
+      return self.to_s()
     end
 
   end
@@ -57,7 +64,7 @@ class SystemGraph
     nil
   end
 
-  def add_node(segment, data = {})
+  def add_node(segment, data: {})
     return false if @gobjects_by_uuid.has_key?(segment.uuid)
 
     n = SysNode.new(segment, data: data)
@@ -84,12 +91,12 @@ class SystemGraph
     end
   end
 
-  def add_edge(seg_conn, data = {})
+  def add_edge(seg_conn, data: {})
     edge = @gobjects_by_uuid[seg_conn.uuid]
     puts edge
     return unless edge.nil?
 
-    edge = SysEdge.new(seg_conn, data)
+    edge = SysEdge.new(seg_conn, data: data)
     @edges.push(edge)
     @gobjects_by_uuid[seg_conn.uuid] = edge
   end
@@ -117,7 +124,15 @@ class SystemGraph
     answer
   end
 
-  def bfs_node_visitor(start_seg, result, multivisit: false, &block)
+  VISIT_ALL = lambda { |edge| 
+    if edge then 
+      return true
+    end
+
+    false
+  }
+
+  def bfs_node_visitor(start_seg, result, multivisit: false, edge_filter: VISIT_ALL, &block)
     raise ArgumentError, 'Need a code block to execute on each node' unless block_given?
 
     discovery_queue = []
@@ -132,10 +147,12 @@ class SystemGraph
       seg_ids[n.seg.uuid] = order
       block.call(e, n, result)
       next_links = out_edges(n.seg)
-      for link in next_links
+      next_links.each { |link|
         n2 = find_node(segment: link.conn.to_seg)
-        discovery_queue.push([link, n2])
-      end
+        if edge_filter.call(link) then
+          discovery_queue.push([link, n2])
+        end
+      }
       order += 1
     end
     result
@@ -161,6 +178,7 @@ class SystemGraph
         discovery_queue.push(link.from_seg)
       end
     end
+    return g
   end
 
 end
