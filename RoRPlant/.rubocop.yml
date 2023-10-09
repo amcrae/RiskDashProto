@@ -1,0 +1,17 @@
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/IndentationWidth:
+  Width: 2
+
+Layout/TrailingWhitespace:
+  Enabled: false
+
+Metrics:
+  Enabled: false
+
+Style:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true

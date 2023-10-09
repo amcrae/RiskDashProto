@@ -1,11 +1,12 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 # puts "Start loading Segment", caller, ""
 
 class Segment < ApplicationRecord
-  belongs_to :parent, class_name:"Segment", foreign_key:'parent_id', optional:true
 
-  belongs_to :asset, optional:true
+  belongs_to :parent, class_name: "Segment", foreign_key: 'parent_id', optional: true
+
+  belongs_to :asset, optional: true
   
   attr_accessor :level 
   
@@ -27,16 +28,19 @@ class Segment < ApplicationRecord
   # TODO: change to a FK into new table
   # As these should come from an external source/table that could grow in size, the possibility of filling the ruby Symbol table arises.
   # The pragma at top will ensure these tokens are frozen, and a .freeze() would be done on data imported from database or file.
-  VALID_SEGMENT_TYPES = ['LOGICAL', 'PORT', 'PIPE', 'SHAFT', 'MOTOR', 'PUMP', 'FLANGE', 'VALVE', 'CABLE', 'PLUG', 'SOCKET', 'SWITCH']
+  VALID_SEGMENT_TYPES = [
+    'LOGICAL', 'PORT', 'PIPE', 'SHAFT', 'MOTOR', 'PUMP',
+    'FLANGE', 'VALVE', 'CABLE', 'PLUG', 'SOCKET', 'SWITCH'
+  ]
   
   # TODO: move to new table.
   SEGMENT_TYPE_COEFFS = {
     'LOGICAL' => [],
     'PORT' => [],
-    'PIPE'  => [],
+    'PIPE' => [],
     'SHAFT' => [],
     'MOTOR' => ['current --> angular velocity', 'efficiency'], # simplistic, but the goal is to learn RoR not motor theory.
-    'PUMP' => ['angular velocity --> volumetric flow','efficiency'], 
+    'PUMP' => ['angular velocity --> volumetric flow', 'efficiency'], 
     'FLANGE' => [], 
     'VALVE' => [], 
     'CABLE' => [], 

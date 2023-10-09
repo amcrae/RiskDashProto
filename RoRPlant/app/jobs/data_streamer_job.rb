@@ -1,5 +1,3 @@
-require 'plant_sim'
-
 # Not actually intended to run as an ActiveJob.
 # It needs to communicate with the web clients and this is quicker to implement as a thread
 #  rather than set up a separate client comms channel to a secondary process.
@@ -42,6 +40,10 @@ class DataStreamerJob < ApplicationJob
       	end while nothing_new;
       	if mlist.length > 0 then SegmentMeasurementsChannel.send_measurements(mlist); end;
       	if segs.length > 0 then SegmentStatusChannel.send_statuses(segs); end;
+
+        # Should keep each channel devoted to a particular message type, much like OIIE ISBM.
+        # TODO: Need a whole new ActiveCable Channel for RiskAssessments
+        # TODO: stream new risk assessments here too.
       	
       	for m in mlist
       	  if m.created_at > latest_m then
