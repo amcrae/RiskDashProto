@@ -23,7 +23,8 @@ module RoRPlant
     
     config.middleware.insert_before ActionDispatch::Static, Rack::BounceFavicon
 
-    config.middleware.insert_after ActionDispatch::HostAuthorization, CustomHeader
+    config.middleware.insert_after ActionDispatch::HostAuthorization, CustomHeader, "extra arg1", "arg2"
+    config.middleware.insert_after ActionDispatch::HostAuthorization, CustomHeader, "unique args", "foo"
 
     config.active_job.queue_adapter = :delayed_job
     

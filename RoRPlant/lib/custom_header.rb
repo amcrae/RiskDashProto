@@ -7,9 +7,11 @@ class CustomHeader
 
   HEADER_NAME = "X-Plant-Custom-Bits";
 
-  def initialize(app)
+  def initialize(app, *others)
     @app = app
+    @unique_args = others or []
     Rails.logger.info("CustomHeader initialised for" + (app.to_s));
+    Rails.logger.info("CustomHeader others args == " + (@unique_args.to_s))
   end
 
   def call(env)
@@ -40,7 +42,7 @@ class CustomHeader
 
     # change to response
     res = Rack::Response.new(body, status, headers)
-    nval = "Response CustomHeader calc at " + Time.now().to_s()
+    nval = "Response CustomHeader #{@unique_args} calc at " + Time.now().to_s()
     res.add_header(CustomHeader::HEADER_NAME, nval)
 
     [res.status, res.headers, res.body]
