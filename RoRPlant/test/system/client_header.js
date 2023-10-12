@@ -6,7 +6,7 @@ c_response = await fetch(c_url, {
     credentials: "same-origin", // include, *same-origin, omit
     headers: {
       "Content-Type": "application/json",
-      "X-PLANT-CUSTOM-BITS": "value from client"
+      "X-Plant-Custom-Bits": "value from client"
     },
     redirect: "follow"
 });
