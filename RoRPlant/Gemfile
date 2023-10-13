@@ -30,6 +30,9 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# include devise framework for user management and authentication.
+gem "devise", '~> 4.9', '>= 4.9.3'
+
 # handy for synthetic data
 gem "perlin_noise"
 
