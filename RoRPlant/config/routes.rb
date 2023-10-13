@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  devise_for :users
   post 'asset_status/sabotage'
   post 'asset_status/repair'
   get 'asset_status/show'
