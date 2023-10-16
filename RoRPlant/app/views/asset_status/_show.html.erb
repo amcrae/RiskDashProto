@@ -1,17 +1,21 @@
-<%= turbo_frame_tag dom_id(asset)+"_status" do %>
-	  <!-- asset.id <%=asset.id%> -->
-	  <% if asset.readiness=="SERVICEABLE" then %>
-	    <form action="/asset_status/sabotage" method="POST">
-	    <%= link_to(asset.shortname, asset_path(asset)) %> <%= asset.readiness %> 
-	    <input type="hidden" name="asset_id" value="<%=asset.id%>"/>
-	    <input type="submit" value="💣"/>
-	    </form>
-	  <% else %>
-	    <form action="/asset_status/repair" method="POST">
-	    <%= link_to(asset.shortname, asset_path(asset)) %> <%= asset.readiness %> 
-	    <input type="hidden" name="asset_id" value="<%=asset.id%>"/>
-	    <input type="submit" value="🔧"/>
-	    </form>
-	  <% end %>
+<%= link_to(asset.shortname, asset_path(asset)) %>
+<% if user_signed_in? %>
+	<%= turbo_frame_tag dom_id(asset)+"_status" do %>
+		<!-- asset.id <%=asset.id%> -->
+		<% if asset.readiness=="SERVICEABLE" then %>
+			<form action="/asset_status/sabotage" method="POST">
+			<%= asset.readiness %> 
+			<input type="hidden" name="asset_id" value="<%=asset.id%>"/>
+			<input type="submit" value="💣"/>
+			</form>
+		<% else %>
+			<form action="/asset_status/repair" method="POST">
+			<%= asset.readiness %> 
+			<input type="hidden" name="asset_id" value="<%=asset.id%>"/>
+			<input type="submit" value="🔧"/>
+			</form>
+		<% end %>
+	<% end %>
+<% else %>
+  🛂<!-- No actions available for non-authenticated user. -->
 <% end %>
-
