@@ -13,13 +13,25 @@
  *= require_tree .
  *= require_self
  */
- 
- #layout1 {
+
+#segment_tree table { 
+	border-collapse: collapse;
+}
+
+#segment_tree td {
+	padding: 0px;
+}
+
+.tree_indent {
+	font-size: larger;
+}
+
+#layout1 {
  	display:table;
     	table-layout:fixed;
  	width: 100%;
  	vertical-align:top;
- }
+}
 
  .sidebyside {
  	display: table-row; 

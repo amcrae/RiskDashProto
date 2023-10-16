@@ -71,7 +71,7 @@
 	 %>
 	 <div data-path="<%= seg.path %>">
 	 <table><tr>
-	  <td> <span style="margin-left:<%= (1.2 * (seg.level-1)).round(1) %>em;">┣</span> 
+	  <td> <span class="tree_indent" style="margin-left:<%= (1.2 * (seg.level-1)).round(1) %>em;">┣</span> 
 	  <td><%= link_to("#"+seg.id.to_s(), segment_path(seg))%> 
 	  <td><%= seg.segtype %> 
 	  <td><%= seg.shortname %> 
