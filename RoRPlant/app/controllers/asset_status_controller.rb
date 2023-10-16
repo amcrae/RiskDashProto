@@ -1,31 +1,34 @@
+# frozen_string_literal: true
+
 class AssetStatusController < ApplicationController  # ActionController::API
+  before_action :authenticate_user!, except: %i[ show ]
 
   def sabotage
-  	asset_id = params[:asset_id];
-  	Rails.logger.debug("Gonna sabotage #{asset_id} !");
-  	@asset = Asset.find(asset_id);
-  	@asset.readiness = 'FAILED';
-  	if @asset.segment then
-  		@segment = @asset.segment;
-  		@segment.operational = "OFFLINE";
-  		@segment.save()
-  	end
-  	@asset.save();
-  	render partial: "asset_status/show", locals: {asset: @asset}
+    asset_id = params[:asset_id];
+    Rails.logger.debug("Gonna sabotage #{asset_id} !");
+    @asset = Asset.find(asset_id);
+    @asset.readiness = 'FAILED';
+    if @asset.segment then
+      @segment = @asset.segment;
+      @segment.operational = "OFFLINE";
+      @segment.save()
+    end
+    @asset.save();
+    render partial: "asset_status/show", locals: { asset: @asset }
   end
 
   def repair
-  	asset_id = params[:asset_id];
-  	Rails.logger.debug("Gonna repair #{asset_id} !");
-  	@asset = Asset.find(asset_id);
-  	@asset.readiness = 'SERVICEABLE';
-  	@asset.save();  	
-  	if @asset.segment then
-  		@segment = @asset.segment;
-  		@segment.operational = "RUNNING";
-  		@segment.save()
-  	end
-  	render partial: "asset_status/show", locals: {asset: @asset}
+    asset_id = params[:asset_id];
+    Rails.logger.debug("Gonna repair #{asset_id} !");
+    @asset = Asset.find(asset_id);
+    @asset.readiness = 'SERVICEABLE';
+    @asset.save();  	
+    if @asset.segment then
+      @segment = @asset.segment;
+      @segment.operational = "RUNNING";
+      @segment.save()
+    end
+    render partial: "asset_status/show", locals: { asset: @asset }
   end
 
   def show
