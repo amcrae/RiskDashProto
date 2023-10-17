@@ -19,7 +19,8 @@
 }
 
 #segment_tree td {
-	padding: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
 }
 
 .tree_indent {
