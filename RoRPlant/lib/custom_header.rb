@@ -23,6 +23,13 @@ class CustomHeader
 
     req = Rack::Request.new(env)
     # Change to request
+
+    sesh = env['rack.session']
+    s = ""
+    for k, v in sesh
+      s = s + "#{k}=#{v}, "
+    end
+    Rails.logger.info("sesh hash is #{s}")
     
     # req.each_header do |k, _v|
     #  Rails.logger.info("got header #{k}")
@@ -40,6 +47,8 @@ class CustomHeader
       req.set_header(CustomHeader::HEADER_NAME, nval)
       Rails.logger.info("CustomHeader set custom request header == #{nval}")
     end
+    
+    sesh[:FOO] = "Bar"
 
     status, headers, body = @app.call(env)
 

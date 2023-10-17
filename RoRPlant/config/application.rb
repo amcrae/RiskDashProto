@@ -3,6 +3,7 @@ require_relative "boot"
 require "rails/all"
 
 require_relative '../lib/custom_header'
+require_relative '../lib/mock_proxy'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -20,14 +21,19 @@ module RoRPlant
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-    
+
+    # config.session_store :cache_store
+
     config.middleware.insert_before ActionDispatch::Static, Rack::BounceFavicon
 
-    config.middleware.insert_after ActionDispatch::HostAuthorization, CustomHeader, "extra arg1", "arg2"
-    config.middleware.insert_after ActionDispatch::HostAuthorization, CustomHeader, "unique args", "foo"
+    config.middleware.insert_after Rack::Head, MockProxy
+
+    config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
+    # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
 
     config.active_job.queue_adapter = :delayed_job
     
     config.streamer_thread = nil
+
   end
 end
