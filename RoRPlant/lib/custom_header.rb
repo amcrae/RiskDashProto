@@ -18,6 +18,9 @@ class CustomHeader
     subset = env.select { |k, _v| k.start_with? 'HTTP_' };
     Rails.logger.info("CustomHeader called for " + subset.to_s)
 
+    ext_to_app_mappings = Rails.application.config_for(:authorisation)[:provider_to_app]
+    Rails.logger.info("Got role config info: " + ext_to_app_mappings.to_s)
+
     req = Rack::Request.new(env)
     # Change to request
     

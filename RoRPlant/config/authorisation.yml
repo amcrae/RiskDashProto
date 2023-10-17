@@ -1,0 +1,24 @@
+shared:
+  app_role_permissions:
+    technician:
+      - asset.create
+      - asset.read
+      - asset.update
+      - asset.delete
+      - asset.repair
+    terrorist:
+      - asset.sabotage
+
+production:
+  provider_to_app:
+    AD_STAFF_TECH_GRP:
+      - technician
+    AD_EXT_TERRORIST_GRP: 
+      - terrorist
+
+development:
+  provider_to_app:
+    X_STAFF_TECH_GRP: 
+      - technician
+    X_EXT_TERRORIST_GRP: 
+      - terrorist
