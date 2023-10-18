@@ -4,6 +4,7 @@ require "rails/all"
 
 require_relative '../lib/custom_header'
 require_relative '../lib/mock_proxy'
+require_relative '../lib/header_authentication'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -31,9 +32,16 @@ module RoRPlant
     config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
     # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
 
+    config.middleware.insert_after CustomHeader, HeaderAuthentication
+
     config.active_job.queue_adapter = :delayed_job
     
     config.streamer_thread = nil
+
+    config.before_initialize do
+      # initialization code goes here
+      HeaderAuthentication::add_to_warden();
+    end
 
   end
 end

@@ -1,0 +1,21 @@
+development:
+  header_configs:
+    Mock:
+      - 
+        header: x-auth-accesstoken
+        required: false
+        pubkey_function: get_idp_signer_key
+        pubkey_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
+      - 
+        header: x-auth-identity
+        required: true
+        is_user_principal_token: true
+        extract_upn_function: get_email
+        pubkey_function: get_idp_signer_key
+        pubkey_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
+      -
+        header: x-auth-data
+        required: true
+        is_role_claim_token: true
+        pubkey_function: get_jwks_signer_key
+        pubkey_args: [ "www.aws/PKCS/%kid%/key.gpg" ]

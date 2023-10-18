@@ -310,4 +310,11 @@ Devise.setup do |config|
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
+
+  # add header authentication method as first method.
+  config.warden do |manager| 
+    manager.default_strategies(scope: :user).unshift(:header_authentication);
+    Rails.logger.info("manager.default_strategies == #{manager.default_strategies(scope: :user)}")
+  end 
+  
 end
