@@ -86,3 +86,17 @@
     p2.asset_id = p2a.id;
     p2.save()
 
+    # Permissions model
+    RolePermission.new(role_name: "TECHNICIAN", obj_name: "Asset", perm_name: "manage").save();
+    RolePermission.new(role_name: "TECHNICIAN", obj_name: "Asset", perm_name: "repair").save();
+    RolePermission.new(role_name: "TERRORIST", obj_name: "Asset", perm_name: "sabotage").save();
+
+    # Create sample users
+    u2 = User.new(
+      email: "user2@example.com", password: "abc_123", full_name: "User McTwo", role_name: "TECHNICIAN"
+    );
+    u2.save()
+    u3 = User.new(
+      email: "user3@example.com", password: "3v!l_Inc", full_name: "Terry Wrist", role_name: "TERRORIST"
+    );
+    u3.save()
