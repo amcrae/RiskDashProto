@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_13_045821) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_18_023248) do
   create_table "assets", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -83,6 +83,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_045821) do
     t.index ["scope_segment_id"], name: "index_risk_assessments_on_scope_segment_id"
   end
 
+  create_table "role_permissions", force: :cascade do |t|
+    t.string "role_name", null: false
+    t.string "obj_name", null: false
+    t.string "perm_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["role_name"], name: "index_role_permissions_on_role_name"
+  end
+
   create_table "segment_connections", force: :cascade do |t|
     t.string "uuid"
     t.string "shortname"
@@ -118,6 +127,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_045821) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "role_name"
+    t.string "full_name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
