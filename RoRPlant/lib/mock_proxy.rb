@@ -28,7 +28,7 @@ class MockProxy
     for k, v in sesh
       s = s + "#{k}=#{v}, "
     end
-    Rails.logger.info("sesh hash is #{s}")
+    # Rails.logger.info("sesh hash is #{s}")
 
     # check if the request should be interecepted to establish a mock headers config.
     for conf_name in @header_configs.keys
@@ -37,13 +37,16 @@ class MockProxy
       if config.has_key?(:set_on_intercepted_path) then
         detect_path = config[:set_on_intercepted_path]
         if req.fullpath().include?(detect_path)
+          Rails.logger.info("MockProxy adding headers")
           sesh[MockProxy::SESSION_VAR_CONFNAME] = conf_name
         end
-
-      elsif config.has_key?(:remove_on_intercepted_path) then
+      end
+      
+      if config.has_key?(:remove_on_intercepted_path) then
         detect_path = config[:remove_on_intercepted_path]
         if req.fullpath().include?(detect_path)
-          sesh[MockProxy::SESSION_VAR_CONFNAME] = nil
+          Rails.logger.info("MockProxy removing headers")
+          sesh.delete(MockProxy::SESSION_VAR_CONFNAME)
         end
       end
 
@@ -62,11 +65,15 @@ class MockProxy
     return [status, headers, body]
   end
 
+  def cgize_name(real_name) 
+    ("HTTP_" + real_name).upcase().sub('-', '_')
+  end
+
   def set_headers(config_name, req)
     Rails.logger.info("setting headers for mock config #{config_name}")
     conf = @header_configs[config_name.to_sym]
     for n, v in conf[:header_values]
-      req.set_header("HTTP_" + n.to_s, v)
+      req.set_header(cgize_name(n.to_s), v)
       Rails.logger.info("set req header #{n} == #{v}")
     end
   end
