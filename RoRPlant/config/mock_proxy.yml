@@ -4,9 +4,9 @@ development:
       set_on_intercepted_path: /MOCKPROXY/user2
       remove_on_intercepted_path: /MOCKPROXY/scrub
       header_values:
-        x-auth-accesstoken: 1002
+        x-auth-accesstoken: eyJmdWxsbmFtZSI6ICJVc2VyIE1jVHdvIiwgInVwbiI6ICJ1c2VyMkBleGFtcGxlLmNvbSIsICJtYWlsIjogInVzZXIyQGV4YW1wbGUuY29tIiwgInBob25lIjoiMDQ5MSA1NzAgMTU2IiwgImlzc3VlciI6ImhleWp1c3QudHJ1c3R1cy5jb20ifXxkNjcyNjkyNjZjODg1MjY2MjI0Y2U0ZWNkN2RjNDlkNDFiMjI1NGE4
         x-auth-identity: user2@example.com
-        x-auth-data: {name: "User McTwo", memberOf: [ "X_STAFF_TECH_GRP", "X_SOMETHING_ELSE" ], mail: "user2@example.com" }
+        x-auth-data: eyJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWVtYmVyT2YiOiBbICJYX1NUQUZGX1RFQ0hfR1JQIiwgIlhfU09NRVRISU5HX0VMU0UiIF0gfXw2NzFmMTc5N2UwNzU2MzBhMmM4NTg5NWVlMjM5NTkxODc4YjcwOWZl
     user3:
       set_on_intercepted_path: /MOCKPROXY/user3
       remove_on_intercepted_path: /MOCKPROXY/scrub

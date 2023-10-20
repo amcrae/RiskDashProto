@@ -1,21 +1,24 @@
 development:
   header_configs:
     Mock:
-      - 
-        header: x-auth-accesstoken
-        required: false
-        pubkey_function: get_idp_signer_key
-        pubkey_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
-      - 
-        header: x-auth-identity
-        required: true
-        is_user_principal_token: true
-        extract_upn_function: get_email
-        pubkey_function: get_idp_signer_key
-        pubkey_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
-      -
-        header: x-auth-data
-        required: true
-        is_role_claim_token: true
-        pubkey_function: get_jwks_signer_key
-        pubkey_args: [ "www.aws/PKCS/%kid%/key.gpg" ]
+      header_extractions:
+        - 
+          http_header: x-auth-accesstoken
+          required: true
+          get_signing_key: mock_key
+          signing_key_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
+          sig_verifier: mock_sig_validation
+          extraction_function_name: get_user_template
+        -
+          http_header: x-auth-data
+          required: true
+          get_signing_key: mock_key
+          signing_key_args: [ "www.aws/PKCS/%kid%/key.gpg" ]
+          sig_verifier: mock_sig_validation
+          extraction_function_name: mock_extract_roles
+        - 
+          http_header: x-auth-identity
+          required: true
+          extraction_function_name: nop
+          validator_function_name: upn_match_to_template
+      user_upn_extraction: 2
