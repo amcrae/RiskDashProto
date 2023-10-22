@@ -41,3 +41,5 @@ RoRPlant/public/assets
 # Ignore master key for decrypting credentials and more.
 RoRPlant/config/master.key
 
+#ignore awk script profile made only by a project-specific command-line tool (homebrew signing).
+**/awkprof.out
