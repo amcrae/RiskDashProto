@@ -24,7 +24,7 @@ class PlantController < ApplicationController
     res = Segment.connection.select_all(hierarchy_sql).to_a();
     tree_order = []
     for r in res do
-      puts r;
+      # puts r;
       seg = Segment.new(id:r["id"], shortname:r["shortname"], segtype:r["segtype"], operational:r["operational"], parent_id:r["parent_id"]);
       seg.level = r["level"]
       seg.path = r["connect_by_path"]

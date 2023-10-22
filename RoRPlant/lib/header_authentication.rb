@@ -117,6 +117,7 @@ class HeaderAuthentication
     if all_verified then
       upn = user_template['upn'];
       sesh[SESS_KEY_HA_AUTH_UPN] = upn;
+      puts "HeaderAuthentication identified #{upn}."
       leave_calling_card = true
 
       # step 3.5
@@ -254,6 +255,7 @@ class HeaderAuthentication
           Rails.logger.info("header_authentication. find '#{upn}'...")
           user = User.find_by(email: upn)
           if user != nil then 
+            puts "HeaderAuthentication replied to Warden with #{upn}."
             return success!(user)
           end
         end
