@@ -29,10 +29,10 @@ module RoRPlant
 
     config.middleware.insert_after Rack::Head, MockProxy
 
-    config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
+    # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
     # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
 
-    config.middleware.insert_after CustomHeader, HeaderAuthentication, "Mock"
+    config.middleware.insert_after MockProxy, HeaderAuthentication, "Mock"
 
     config.active_job.queue_adapter = :delayed_job
     
