@@ -17,11 +17,6 @@
       <div class="login_banner">
       <% if Rails.configuration.custom_authentication == :PROXY_ONLY then %>
         Login/logout is only by your proxy.
-        <% if user_signed_in? %>
-          <a href="?arg=/MOCKPROXY/scrub">mock User2 logout</a>
-        <% else %>
-          <a href="?arg=/MOCKPROXY/user2">mock User2 login</a>
-        <% end %>
       <% else %>
         <% if user_signed_in? %>
           <% # ##Notes on what worked and did not work.
@@ -40,6 +35,15 @@
           <%=button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete ) %>
         <% else %>
           <%= button_to "Sign in", new_user_session_path %>
+        <% end %>
+      <% end %>
+      <% # TODO: Debugging aid in absence of actual proxy server, to be removed when proxy involved.
+        if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then 
+      %>
+        <% if user_signed_in? %>
+          <a href="?arg=/MOCKPROXY/scrub">mock logout</a>
+        <% else %>
+          <a href="?arg=/MOCKPROXY/user2">mock User2 login</a>
         <% end %>
       <% end %>
       </div>

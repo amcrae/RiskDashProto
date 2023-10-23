@@ -22,5 +22,5 @@ development:
           extraction_function_name: nop
           validator_function_name: upn_match_to_template
       user_upn_extraction: 2
-      signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id]
+      signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id, warden.user.user.key]
       signout_clears_session: false
