@@ -62,10 +62,6 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
-  # custom application setting to keep middleware and GUI consistent.
-  # allowed values are :PROXY_ONLY, :PROXY_OR_APP, :APP_ONLY
-  config.custom_authentication = :PROXY_ONLY
-
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 

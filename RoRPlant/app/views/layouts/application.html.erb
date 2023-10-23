@@ -15,8 +15,13 @@
   <body>
     <div id='top_messages' class='messages_box'>
       <div class="login_banner">
-      <% if Rails.application.config.custom_authentication == :PROXY_ONLY then %>
-      Login/logout is only by your proxy.
+      <% if Rails.configuration.custom_authentication == :PROXY_ONLY then %>
+        Login/logout is only by your proxy.
+        <% if user_signed_in? %>
+          <a href="?arg=/MOCKPROXY/scrub">mock User2 logout</a>
+        <% else %>
+          <a href="?arg=/MOCKPROXY/user2">mock User2 login</a>
+        <% end %>
       <% else %>
         <% if user_signed_in? %>
           <% # ##Notes on what worked and did not work.
@@ -34,7 +39,6 @@
           %>
           <%=button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete ) %>
         <% else %>
-          <a href="?arg=/MOCKPROXY/user2">mock User2 login</a>
           <%= button_to "Sign in", new_user_session_path %>
         <% end %>
       <% end %>

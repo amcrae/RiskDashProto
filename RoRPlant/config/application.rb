@@ -25,16 +25,20 @@ module RoRPlant
 
     # config.session_store :cache_store
 
+    # custom application setting to keep middleware and GUI consistent.
+    # allowed values are :PROXY_ONLY, :PROXY_OR_APP, :APP_ONLY
+    config.custom_authentication = :PROXY_ONLY
+
     config.middleware.insert_before ActionDispatch::Static, Rack::BounceFavicon
 
     config.middleware.insert_after Rack::Head, MockProxy
 
     # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
     # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
-    if [:PROXY_ONLY, :PROXY_OR_APP].includes?(Rails.application.config.custom_authentication) then
+    if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then
       config.middleware.insert_after MockProxy, HeaderAuthentication, "Mock"
     end
-    
+
     config.active_job.queue_adapter = :delayed_job
     
     config.streamer_thread = nil
