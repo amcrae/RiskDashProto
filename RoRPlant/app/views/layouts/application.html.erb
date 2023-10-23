@@ -13,30 +13,38 @@
   </head>
 
   <body>
-    <div style="float:right; width:20em; border: solid 1px black;">
-      <% if user_signed_in? %>
-        <% # ##Notes on what worked and did not work.
-          # This is the popular idiom that worked in Rails 5 & 6 with Devise, but did not work in Rails 7 + Devise.
-          # Refer https://github.com/heartcombo/devise#hotwireturbo
-          #   =link_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete )
-          #
-          # Works in Rails 7 if turbo-rails extension is installed.
-          # Refer https://stackoverflow.com/a/72511327/9981771 
-          #   =link_to( "Sign out #{current_user.email}", destroy_user_session_path, data: { turbo_method: "delete" }, class: 'nav-link' )
-          # 
-          # Definitely works in Rails 5 & 6 & 7 regardless of Turbo, but requires button not hyperlink.
-          # Refer https://stackoverflow.com/a/70856955/9981771  
-          #   =button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete )
-        %>
-        <%=button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete ) %>
+    <div id='top_messages' class='messages_box'>
+      <div class="login_banner">
+      <% if Rails.application.config.custom_authentication == :PROXY_ONLY then %>
+      Login/logout is only by your proxy.
       <% else %>
-        <%= button_to "Sign in", new_user_session_path %>
+        <% if user_signed_in? %>
+          <% # ##Notes on what worked and did not work.
+            # This is the popular idiom that worked in Rails 5 & 6 with Devise, but did not work in Rails 7 + Devise.
+            # Refer https://github.com/heartcombo/devise#hotwireturbo
+            #   =link_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete )
+            #
+            # Works in Rails 7 if turbo-rails extension is installed.
+            # Refer https://stackoverflow.com/a/72511327/9981771 
+            #   =link_to( "Sign out #{current_user.email}", destroy_user_session_path, data: { turbo_method: "delete" }, class: 'nav-link' )
+            # 
+            # Definitely works in Rails 5 & 6 & 7 regardless of Turbo, but requires button not hyperlink.
+            # Refer https://stackoverflow.com/a/70856955/9981771  
+            #   =button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete )
+          %>
+          <%=button_to( "Sign out #{current_user.email}", destroy_user_session_path, method: :delete ) %>
+        <% else %>
+          <a href="?arg=/MOCKPROXY/user2">mock User2 login</a>
+          <%= button_to "Sign in", new_user_session_path %>
+        <% end %>
       <% end %>
+      </div>
+
+      <p class="notice"><%= notice %></p>
+      <p class="alert"><%= alert %></p>
     </div>
 
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
-    
     <%= yield %>
+    
   </body>
 </html>
