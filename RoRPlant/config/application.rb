@@ -31,9 +31,10 @@ module RoRPlant
 
     # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
     # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
-
-    config.middleware.insert_after MockProxy, HeaderAuthentication, "Mock"
-
+    if [:PROXY_ONLY, :PROXY_OR_APP].includes?(Rails.application.config.custom_authentication) then
+      config.middleware.insert_after MockProxy, HeaderAuthentication, "Mock"
+    end
+    
     config.active_job.queue_adapter = :delayed_job
     
     config.streamer_thread = nil

@@ -77,7 +77,7 @@ class HeaderAuthentication
     # step 3.2
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     if !all_present then
-      sesh.clear() # destroy all session data
+      clear_session_vars(req, sesh);
       return @app.call(env)
     end
 
@@ -137,7 +137,7 @@ class HeaderAuthentication
       account.role_name = user_roles[0];
       account.save()
     else
-      sesh.clear() # destroy all session data
+      clear_session_vars(req, sesh);
     end
 
     # continue request handler chain
@@ -190,6 +190,18 @@ class HeaderAuthentication
     if extraction_hash.has_key?(:extraction_function_name) then
       extractor = self.method(extraction_hash[:extraction_function_name]);
       return extractor.call(i, extraction_hash, header_value, req, sesh, user_template, user_roles);
+    end
+  end
+
+  def clear_session_vars(req, sesh)
+    for vname in @header_config[:signout_erases_session_vars]
+      if vname.start_with?('SESS_KEY_HA_') then
+        varname = HeaderAuthentication.const_get(vname);
+      else
+        varname = vname;
+      end
+      Rails.logger.info("HeaderAuthentication is removing session var #{varname}.")
+      sesh.delete(varname);
     end
   end
 
