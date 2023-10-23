@@ -34,11 +34,14 @@ class PlantSim
   def sim_step(time_step)
     stop_inclusive = @sys_time + time_step;
     latest_measurements = load_latest_measurements(@sys_time, stop_inclusive)
-    propagate_inputs(latest_measurements, max_time);
+    propagate_inputs(latest_measurements, stop_inclusive);
     # TODO: more?
     @sys_time = stop_inclusive
   end
 
+  # If a predicted effect of an input would occur beyond the 
+  # simulation time step horizon of _max_time, do not simulate 
+  # that effect yet.
   def propagate_inputs(measurements, _max_time)
     for mmsg in measurements
       puts mmsg

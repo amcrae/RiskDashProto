@@ -3,6 +3,8 @@
 require "action_cable"
 require "plant_sim"
 
+require "risk_assessor"
+
 class SynthesiseDataJob < ApplicationJob
 
   queue_as :default
@@ -12,8 +14,8 @@ class SynthesiseDataJob < ApplicationJob
   
   attr_accessor :keep_running, :last_value
 
-  DEMO_SCOPE_SEGMENT_UUID = ""
-  DEMO_OUTPUT_UUID = ""
+  DEMO_SCOPE_SEGMENT_UUID = "1-2b01-0"
+  DEMO_OUTPUT_UUID = "1-2b01-2"
 
   # TODO: should be configurable by caller of perform. hardcoded for demo expediency.
   MLOC_DATA_DISTRIBUTIONS = [
@@ -143,7 +145,7 @@ class SynthesiseDataJob < ApplicationJob
       simtime_s = simtime_s + SIM_TIME_PER_SECOND;
 
       risk = @risk_assessor.gen_risk_assessment();
-      risk.save();
+      if risk then risk.save(); end
 
       # prevent database from growing too large for demo.
       # TODO: would not do this in a long-lived application.
