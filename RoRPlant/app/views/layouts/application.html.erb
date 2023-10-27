@@ -15,6 +15,9 @@
   <body>
     <div id='top_messages' class='messages_box'>
       <div class="login_banner">
+      <% if user_signed_in? %>
+        <%= current_user.full_name %>
+      <% end %>
       <% if Rails.configuration.custom_authentication == :PROXY_ONLY then %>
         Login/logout is only by your proxy.
       <% else %>
