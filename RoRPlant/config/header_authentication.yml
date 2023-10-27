@@ -29,3 +29,35 @@ development:
       signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id, warden.user.user.key]
       signout_clears_session: false
       return_auth_method_header: true
+
+test:
+  header_configs:
+    Mock:
+      ignore_resource_paths: ["/assets", "/3rdparty"]
+      load_user_from_upn_function: user_from_upn
+      create_user_from_template_function: new_user
+      set_user_roles_function: set_user_roles
+      header_extractions:
+        - 
+          http_header: x-auth-accesstoken
+          required: true
+          get_signing_key: mock_key
+          signing_key_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
+          sig_verifier: mock_sig_validation
+          extraction_function_name: get_user_template
+        -
+          http_header: x-auth-data
+          required: true
+          get_signing_key: mock_key
+          signing_key_args: [ "www.aws/PKCS/%kid%/key.gpg" ]
+          sig_verifier: mock_sig_validation
+          extraction_function_name: mock_extract_roles
+        - 
+          http_header: x-auth-identity
+          required: true
+          extraction_function_name: nop
+          validator_function_name: upn_match_to_template
+      user_upn_extraction_step: 2
+      signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id, warden.user.user.key]
+      signout_clears_session: false
+      return_auth_method_header: true
