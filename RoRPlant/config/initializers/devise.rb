@@ -313,7 +313,9 @@ Devise.setup do |config|
 
   # add header authentication method as first method.
   config.warden do |manager| 
-    manager.default_strategies(scope: :user).unshift(:header_authentication);
+    manager.default_strategies(scope: :user).unshift(
+      HeaderAuthentication::class_config_to_strategy(MockHeaderAuthentication, "Mock")
+    );
     Rails.logger.info("manager.default_strategies == #{manager.default_strategies(scope: :user)}")
   end 
   
