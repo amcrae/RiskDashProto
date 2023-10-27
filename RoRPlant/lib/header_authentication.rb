@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'digest'
-require 'base64'
 require 'devise'
 
 # Functions as an adaptor between ID & Role tokens supplied in HTTP Headers
@@ -25,8 +23,9 @@ require 'devise'
 #   6. Warden sets the value of current_user and similar helper objects for use by authorisation.
 #   7. Any authorisation framework which reads current_user (e.g. cancancan) or could use the UPN.
 #
+# This class is abstract in practice. The application-specific methods of verifying
+#   headers and loading User accounts is expected to be done by subclasses.
 class HeaderAuthentication
-  include Devise::Controllers::Helpers
 
   SESS_KEY_HA_STRATEGY_VALID = '_HAUTH_STRATEGY_VALID';
 
@@ -34,9 +33,19 @@ class HeaderAuthentication
 
   SESS_KEY_HA_AUTH_USER = '_HAUTH_USER';
 
+  # shared function to produce an authn strategy name from configured class.
+  def self.class_config_to_strategy(subclass, config_name)
+    # In case of permitting two different authentications for 
+    # different resource paths, it may be necessary to distinguish
+    # different parameters for the same class as different strategies.
+    "#{subclass.to_s + "_" + config_name}".to_sym
+  end
+  
   def initialize(app, configname)
     @app = app
     @config_name = configname
+    all_config = Rails.application.config_for(:header_authentication)
+    @header_config = all_config[:header_configs][@config_name.to_sym];
   end
 
   def cgize_name(real_name) 
@@ -45,17 +54,40 @@ class HeaderAuthentication
 
   def call(env)
     req = Rack::Request.new(env);
+
     # reconstructed = reconstruct_headers(env)
     # sesh = req.session
     sesh = env['rack.session']
 
+    # reloads config file each call.
+    # TODO: remove as performance improvement, as changing params is infrequent after init development.
+    all_config = Rails.application.config_for(:header_authentication)
+
+    @header_config = all_config[:header_configs][@config_name.to_sym];
+    extractions = @header_config[:header_extractions]
+
+    @load_user_method = self.method(@header_config[:load_user_from_upn_function]);
+    @new_user_method = self.method(@header_config[:create_user_from_template_function]);
+    @set_roles_method = self.method(@header_config[:set_user_roles_function]);
+
+    skip_resource = false
+    for pathroot in @header_config[:ignore_resource_paths]
+      if req.fullpath.downcase.start_with?(pathroot.downcase) then
+        skip_resource = true
+        break
+      end
+    end
+
+    if skip_resource then
+      # continue chain with no authentication requirement
+      Rails.logger.error("No authentication required for #{req.fullpath}")
+      # do nothing but allow rest of chain to run. No authentication.
+      return @app.call(env)
+    end
+
     # make sure nothing leftover from previous invocations if authentication fails.
     sesh.delete(SESS_KEY_HA_AUTH_UPN);
     sesh.delete(SESS_KEY_HA_AUTH_USER);
-
-    all_config = Rails.application.config_for(:header_authentication)
-    @header_config = all_config[:header_configs][@config_name.to_sym];
-    extractions = @header_config[:header_extractions]
 
     if extractions.length == 0 then
       Rails.logger.error("No headers configured for HeaderAuthentication #{@config_name}")
@@ -77,6 +109,7 @@ class HeaderAuthentication
     # step 3.2
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     if !all_present then
+      puts "HeaderAuthentication found no auth headers. Clearing auth session variables."
       clear_session_vars(req, sesh);
       return @app.call(env)
     end
@@ -89,6 +122,7 @@ class HeaderAuthentication
     all_verified = true
     extractions.each_with_index { |extraction_hash, i|
       header_name = extraction_hash[:http_header]
+      puts "HeaderAuth step #{i} #{header_name}"
       header_cgi_name = cgize_name(header_name)
       present = req.has_header?(header_cgi_name);
       header_value = req.get_header(header_cgi_name);
@@ -98,9 +132,10 @@ class HeaderAuthentication
       if verified != nil then
         all_verified = all_verified && verified;
       end
-      if verified then
+      if verified != false then
         res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
-        if @header_config[:user_upn_extraction].to_i == i then
+        if @header_config[:user_upn_extraction_step].to_i == i then
+          puts "HeaderAuth found upn"
           upn = res
         end
         if @header_config.has_key?(:validator_function_name) then
@@ -114,29 +149,24 @@ class HeaderAuthentication
     leave_calling_card = false
 
     # Step 3.4
-    if all_verified then
-      upn = user_template['upn'];
+    if all_verified && upn != nil then
       sesh[SESS_KEY_HA_AUTH_UPN] = upn;
       puts "HeaderAuthentication identified #{upn}."
-      leave_calling_card = true
+      leave_calling_card = false || (@header_config[:return_auth_method_header] == true);
 
       # step 3.5
-      account = User.find_by(email: user_template['mail'])
+      account = @load_user_method.call(upn);
       if account == nil then
-        init_pw = Digest::SHA1.hexdigest(Random.bytes(8));
-        account = User.new(
-          email: user_template['mail'], 
-          full_name: user_template['fullname'], 
-          role_name: user_roles[0], 
-          password: init_pw
-        );
+        account = @new_user_method.call(user_template);
         account.save()
       end
       
       # step 3.6
-      account.role_name = user_roles[0];
+      @set_roles_method.call(user_roles, account)
       account.save()
+      sesh[SESS_KEY_HA_AUTH_USER] = account
     else
+      puts "HeaderAuthentication found no UPN. Clearing auth session variables."
       clear_session_vars(req, sesh);
     end
 
@@ -158,11 +188,7 @@ class HeaderAuthentication
     header_name = extraction_hash[:http_header]
     header_cgi_name = cgize_name(header_name);
     present = req.has_header?(header_cgi_name);
-    must_verify = (
-      extraction_hash.has_key?(:sig_verifier) ||
-      i == @header_config[:user_upn_extraction]
-    )
-    
+    must_verify = extraction_hash.has_key?(:sig_verifier)
     if !present || !must_verify then
       return nil
     end
@@ -205,52 +231,31 @@ class HeaderAuthentication
     end
   end
 
+  def pk_passes_pinning?(epxected_host, expected_pk, request_ssl_info)
+    # TODO: imitate https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning#openssl
+  end
+
+  # All custom extraction functions will be invokes with this signature.
+  # This example does nothing but return the whole header value unmodified.
   def nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     return header_value
   end
 
-  def mock_key(*args)
-    return 'SECRET'
-  end
-
-  def decode_homebrew(header_value)
-    decoded = Base64.decode64(header_value);
-    return decoded.split('|')
-  end
-
-  def mock_sig_validation(header_value, signing_key)
-    data, sig_rcvd = decode_homebrew(header_value) 
-    prefixed = signing_key + '|' + data
-    sig_recon = Digest::SHA1.hexdigest(prefixed).downcase();
-    return sig_rcvd.downcase() == sig_recon
-  end
-
-  # get user attributes from the mock access-token during prototyping.
-  def get_user_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
-    data, sig_rcvd = decode_homebrew(header_value) 
-    user_hash = JSON.parse(data)
-    user_template.update(user_hash)
-    return user_hash
-  end
-
-  def mock_extract_roles(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
-    data, sig_rcvd = decode_homebrew(header_value) 
-    user_hash = JSON.parse(data)
-    given_ext_roles = user_hash['memberOf']
-    delta = given_ext_roles - user_roles
-    user_roles.concat(delta)
-    return given_ext_roles
-  end
-
-  def verify_match_to_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
-    return header_value == user_template['upn']
-  end
-
-  @@add_to_warden = ->() {
+  # This centralises the (short) work of supplying 
+  #   the strategy implementation into Devise when it asks.
+  # A class method expected to be called from all subclasses.
+  # It has to be called before an instance of the subclass is created.
+  # Written as a lambda to avoid RuboCop warning of defs inside defs.
+  # Parameters: 
+  #   subclass: The Class object of the implementation.
+  #   configname: The name of the parameter set that will be used from `header_authentication.yml`.
+  @@add_to_warden = ->(subclass, configname) {
     # Check whether header-based authentication should be used
     # then identify the relevant user
-    Rails.logger.info("adding header_authentication...")
-    Warden::Strategies.add(:header_authentication) do 
+    strategy_name = HeaderAuthentication::class_config_to_strategy(subclass, configname)
+    Rails.logger.info("adding auth strategy #{strategy_name} ...")
+
+    Warden::Strategies.add(strategy_name) do 
       def valid? 
         # code here to check whether to try and authenticate using this strategy; 
         answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID]
@@ -262,24 +267,21 @@ class HeaderAuthentication
         # code here for doing authentication;
         # if successful, call  
         Rails.logger.debug("header_authentication.UPN?")
-        if session.has_key?(SESS_KEY_HA_AUTH_UPN) && session[SESS_KEY_HA_AUTH_UPN] != nil then
+        if session.has_key?(SESS_KEY_HA_AUTH_UPN) \
+          && session[SESS_KEY_HA_AUTH_UPN] != nil \
+          && session[SESS_KEY_HA_AUTH_USER] != nil \
+        then
           upn = session[SESS_KEY_HA_AUTH_UPN]
-          Rails.logger.info("header_authentication. find '#{upn}'...")
-          user = User.find_by(email: upn)
+          user = session[SESS_KEY_HA_AUTH_USER]
           if user != nil then 
             puts "HeaderAuthentication replied to Warden with #{upn}."
             return success!(user)
           end
         end
-        message = "Could not obtain User from header_auth_upn"
+        message = "Could not obtain User from session variable #{SESS_KEY_HA_AUTH_UPN}"
         fail!(message) # where message is the failure message 
       end 
     end 
   }
-
-  # To be called from Rails application-level config to install the custom auth functions.
-  def self.add_to_warden()
-    @@add_to_warden.call()
-  end
 
 end
