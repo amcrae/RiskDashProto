@@ -1,6 +1,10 @@
 development:
   header_configs:
     Mock:
+      ignore_resource_paths: ["/assets", "/3rdparty"]
+      load_user_from_upn_function: user_from_upn
+      create_user_from_template_function: new_user
+      set_user_roles_function: set_user_roles
       header_extractions:
         - 
           http_header: x-auth-accesstoken
@@ -21,6 +25,7 @@ development:
           required: true
           extraction_function_name: nop
           validator_function_name: upn_match_to_template
-      user_upn_extraction: 2
+      user_upn_extraction_step: 2
       signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id, warden.user.user.key]
       signout_clears_session: false
+      return_auth_method_header: true
