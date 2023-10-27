@@ -23,10 +23,10 @@ require 'devise'
 #   6. Warden sets the value of current_user and similar helper objects for use by authorisation.
 #   7. Any authorisation framework which reads current_user (e.g. cancancan) or could use the UPN.
 #
-# This class is abstract in practice. The application-specific methods of verifying
-#   headers and loading User accounts is expected to be done by subclasses.
-class HeaderAuthentication
-
+# The application-specific methods of verifying headers and loading User accounts
+# are expected to be done by implementing classes that mixin HeaderAuthentication.
+module HeaderAuthentication
+  
   SESS_KEY_HA_STRATEGY_VALID = '_HAUTH_STRATEGY_VALID';
 
   SESS_KEY_HA_AUTH_UPN = '_HAUTH_UPN';
@@ -41,7 +41,7 @@ class HeaderAuthentication
     "#{subclass.to_s + "_" + config_name}".to_sym
   end
   
-  def initialize(app, configname)
+  def configure(app, configname)
     @app = app
     @config_name = configname
     all_config = Rails.application.config_for(:header_authentication)

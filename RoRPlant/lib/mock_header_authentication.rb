@@ -6,7 +6,12 @@ require 'base64'
 # Subclass of HeaderAuthentication which provides custom functions
 # for verifying signatures of the hombrewed symmetric key signature 
 # scheme developed for testing.
-class MockHeaderAuthentication < HeaderAuthentication
+class MockHeaderAuthentication
+  include HeaderAuthentication
+
+  def initialize(app, configname)
+    configure(app, configname);
+  end
 
   def mock_key(*args)
     return 'SECRET'
