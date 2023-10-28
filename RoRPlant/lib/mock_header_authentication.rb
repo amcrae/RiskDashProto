@@ -67,7 +67,6 @@ class MockHeaderAuthentication
     account = User.new(
       email: user_template['mail'], 
       full_name: user_template['fullname'], 
-      role_name: user_roles[0], 
       password: init_pw
     );
     return account;
