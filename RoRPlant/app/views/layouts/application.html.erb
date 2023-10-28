@@ -17,6 +17,8 @@
       <div class="login_banner">
       <% if user_signed_in? %>
         <%= current_user.full_name %>
+      <% else %>
+        You are not logged in.
       <% end %>
       <% if Rails.configuration.custom_authentication == :PROXY_ONLY then %>
         Login/logout is only by your proxy.
