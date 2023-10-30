@@ -92,11 +92,20 @@
     RolePermission.new(role_name: "TERRORIST", obj_name: "Asset", perm_name: "sabotage").save();
 
     # Create sample users
+    u1 = User.new(
+      auth_type: "LOCAL",
+      email: "user1@example.com", password: "scoTTY", full_name: "Montgomery Scott", role_name: "TECHNICIAN"
+    );
+    u1.save()
+
     u2 = User.new(
+      auth_type: "EXTERNAL",
       email: "user2@example.com", password: "abc_123", full_name: "User McTwo", role_name: "TECHNICIAN"
     );
     u2.save()
+    
     u3 = User.new(
+      auth_type: "EXTERNAL",
       email: "user3@example.com", password: "3v!l_Inc", full_name: "Terry Wrist", role_name: "TERRORIST"
     );
     u3.save()
