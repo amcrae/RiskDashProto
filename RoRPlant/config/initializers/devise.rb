@@ -318,5 +318,30 @@ Devise.setup do |config|
     );
     Rails.logger.info("manager.default_strategies == #{manager.default_strategies(scope: :user)}")
   end 
-  
+
+  Warden::Manager.before_failure do |env, opts|
+    # based on https://stackoverflow.com/questions/12873957/devise-log-after-auth-failure/33230548#33230548
+    # Change 'email' field reference to whatever the User Principle Name is for this app.
+    email = env["action_dispatch.request.request_parameters"][:user] &&
+            env["action_dispatch.request.request_parameters"][:user][:email]
+    ts = Time.now().to_s
+    
+    if opts[:message] == :unconfirmed
+      # this is a special case when :confirmable is used.
+      # the login was correct, but the user hasn't confirmed their 
+      # email address yet
+      ::Rails.logger.info "#{ts} *** Login Failure: unconfirmed account access: #{email}"
+    elsif opts[:action] == "unauthenticated"
+      # "unauthenticated" indicates a login failure
+      if opts[:message] == :not_found_in_database
+        # bad email:
+        # no user found by this email address
+        ::Rails.logger.info "#{ts} *** Login Failure: unknown UPN given: #{email}"
+      else
+        # the user exists in the db, must have been a bad password
+        ::Rails.logger.info "#{ts} *** Login Failure: email-password mismatch: #{email}"
+      end
+    end
+  end
+
 end

@@ -274,7 +274,7 @@ module HeaderAuthentication
           upn = session[SESS_KEY_HA_AUTH_UPN]
           user = session[SESS_KEY_HA_AUTH_USER]
           if user != nil then 
-            puts "HeaderAuthentication replied to Warden with #{upn}."
+            Rails.logger.info("HeaderAuthentication replied to Warden with #{upn}.")
             return success!(user)
           end
         end
@@ -283,5 +283,5 @@ module HeaderAuthentication
       end 
     end 
   }
-
+  
 end

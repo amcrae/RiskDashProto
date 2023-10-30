@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
     else
       uname = "*UNKNOWN* user"
     end
-    Rails.logger.debug("#{ts} *** #{uname} executing #{self.class} with #{params()}");
+    Rails.logger.info("#{ts} *** #{uname} executing #{self.class} with #{params()}");
   end
 
 end
