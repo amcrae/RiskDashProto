@@ -28,7 +28,7 @@ module RoRPlant
 
     # custom application setting to keep middleware and GUI consistent.
     # allowed values are :PROXY_ONLY, :PROXY_OR_APP, :APP_ONLY
-    config.custom_authentication = :PROXY_ONLY
+    config.custom_authentication = :PROXY_OR_APP
 
     config.middleware.insert_before ActionDispatch::Static, Rack::BounceFavicon
 
