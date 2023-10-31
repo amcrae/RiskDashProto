@@ -30,6 +30,22 @@ RSpec.describe PlantController, type: :controller do
   
 end
 
+class ToDoList
+  attr_reader :todo, :done
+  
+  def initialize(todolist)
+    @todo = [] # ensure copy
+    @todo += todolist
+    @done = []
+  end
+
+  def complete_item(item)
+    @todo.slice!(@todo.index(item))
+    @done.append(item)
+  end
+
+end
+
 RSpec.describe "authn middleware request", type: :request do
   # fixtures :users # does not work because 'password' is a property not a DB column
 
@@ -61,8 +77,20 @@ RSpec.describe "authn middleware request", type: :request do
 
   it "returns the old user2 User via Devise when given user2 tokens" do
     # users(:u_two)
+
     # puts "Using LETted object #{u_one}"
     # u2_ll0 = u_one().last_sign_in_at
+    get(root_path + "?a=/MOCKPROXY/user2")
+
+    expect(session['warden.user.user.key']).not_to be_nil
+    
+    expect(response.status).to eq(200)
+    expect(response.body).to include("User McTwo")
+  end
+
+  it "updates User attributes via Devise when given user2 tokens" do
+    # users(:u_two)
+
     u2_0 = User.find_by(email: "user2@example.com")
     u2_ll0 = u2_0.last_sign_in_at
     u2_sic0 = u2_0.sign_in_count
@@ -70,8 +98,6 @@ RSpec.describe "authn middleware request", type: :request do
     expect(u2_ll0).not_to be_nil
 
     get(root_path + "?a=/MOCKPROXY/user2")
-
-    expect(session['warden.user.user.key']).not_to be_nil
     
     puts "lookupid #{u2_0.id}"
     u2_1 = User.find(u2_0.id)
@@ -79,8 +105,46 @@ RSpec.describe "authn middleware request", type: :request do
     expect(u2_ll1).to satisfy("signin timestamp was incremented") { |x| x > u2_ll0}
     puts "TS #{u2_ll0} was updated #{u2_ll1}"
     expect(u2_1.sign_in_count).to satisfy("count incremented") { |x| x > u2_sic0 }
-    expect(response.status).to eq(200)
-    expect(response.body).to include("User McTwo")
+  end
+
+  it "logs the authenticated user2 actions when given user2 tokens" do
+    # users(:u_two)
+    logfile = Rails.logger.instance_variable_get("@logdev").instance_variable_get("@dev")
+    logname = logfile.path
+
+    first_count = 0
+    File.open(logname, "r") do |file|
+      until file.eof
+        file.readline
+        first_count += 1
+      end
+    end
+
+    get(root_path + "?a=/MOCKPROXY/user2")
+    
+    counter = 0
+    find_goals = [
+      "HeaderAuthentication replied to Warden with user2@example.com",
+      "*** User user2@example.com executing"
+    ]
+    progress = ToDoList.new(find_goals)
+    File.open(logname, "r") do |file|
+      puts "resuming log from line #{first_count}..."
+      until file.eof || counter == first_count
+        file.readline
+        counter += 1
+      end
+      until file.eof || progress.todo.size() == 0
+        line = file.readline
+        for item in progress.todo 
+          if line.include?(item)
+            progress.complete_item(item)
+            puts line
+          end
+        end
+      end
+    end
+    expect(progress.todo.size()).to eq(0)
   end
   
 end
