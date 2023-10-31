@@ -90,8 +90,9 @@
     RolePermission.new(role_name: "TECHNICIAN", obj_name: "Asset", perm_name: "manage").save();
     RolePermission.new(role_name: "TECHNICIAN", obj_name: "Asset", perm_name: "repair").save();
     RolePermission.new(role_name: "TERRORIST", obj_name: "Asset", perm_name: "sabotage").save();
-
+    
     # Create sample users
+    puts "'seeds.rb' users creation..."
     u1 = User.new(
       auth_type: "LOCAL",
       email: "user1@example.com", password: "scoTTY", full_name: "Montgomery Scott", role_name: "TECHNICIAN"
