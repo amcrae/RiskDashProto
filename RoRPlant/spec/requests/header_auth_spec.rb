@@ -65,6 +65,7 @@ RSpec.describe "authn middleware request", type: :request do
     # u2_ll0 = u_one().last_sign_in_at
     u2_0 = User.find_by(email: "user2@example.com")
     u2_ll0 = u2_0.last_sign_in_at
+    u2_sic0 = u2_0.sign_in_count
     puts "last_sign_in_at #{u2_ll0}"
     expect(u2_ll0).not_to be_nil
 
@@ -76,11 +77,12 @@ RSpec.describe "authn middleware request", type: :request do
     u2_1 = User.find(u2_0.id)
     u2_ll1 = u2_1.last_sign_in_at
     expect(u2_ll1).to satisfy("signin timestamp was incremented") { |x| x > u2_ll0}
-
+    puts "TS #{u2_ll0} was updated #{u2_ll1}"
+    expect(u2_1.sign_in_count).to satisfy("count incremented") { |x| x > u2_sic0 }
     expect(response.status).to eq(200)
     expect(response.body).to include("User McTwo")
   end
-
+  
 end
 
 RSpec.describe "Page authn results", type: :system do
