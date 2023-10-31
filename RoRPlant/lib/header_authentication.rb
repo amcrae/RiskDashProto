@@ -85,9 +85,8 @@ module HeaderAuthentication
       return @app.call(env)
     end
 
-    # make sure nothing leftover from previous invocations if authentication fails.
+    # make sure no UPN leftover from previous invocations if authentication fails.
     sesh.delete(SESS_KEY_HA_AUTH_UPN);
-    sesh.delete(SESS_KEY_HA_AUTH_USER);
 
     if extractions.length == 0 then
       Rails.logger.error("No headers configured for HeaderAuthentication #{@config_name}")
@@ -106,11 +105,18 @@ module HeaderAuthentication
       all_present = all_present && (present || !required)
     end
     
+    signout_detected = sesh.has_key?(SESS_KEY_HA_STRATEGY_VALID) && \
+                       sesh[SESS_KEY_HA_STRATEGY_VALID] == true && \
+                       !all_present
+
     # step 3.2
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     if !all_present then
-      puts "HeaderAuthentication found no auth headers. Clearing auth session variables."
-      clear_session_vars(req, sesh);
+      puts "HeaderAuthentication found no auth headers."
+      if signout_detected then
+        puts "signout detected, Clearing auth session variables."
+        clear_session_vars(req, sesh);
+      end
       return @app.call(env)
     end
 
@@ -166,7 +172,8 @@ module HeaderAuthentication
       account.save()
       sesh[SESS_KEY_HA_AUTH_USER] = account
     else
-      puts "HeaderAuthentication found no UPN. Clearing auth session variables."
+      puts "HeaderAuthentication found no UPN from any valid headers."
+      puts "clearing auth session variables."
       clear_session_vars(req, sesh);
     end
 
@@ -255,10 +262,12 @@ module HeaderAuthentication
     strategy_name = HeaderAuthentication::class_config_to_strategy(subclass, configname)
     Rails.logger.info("adding auth strategy #{strategy_name} ...")
 
+    # Refer https://github.com/wardencommunity/warden/wiki/Strategies
     Warden::Strategies.add(strategy_name) do 
       def valid? 
         # code here to check whether to try and authenticate using this strategy; 
-        answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID]
+        answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
+                 && !request.path.include?("sign_in")
         Rails.logger.info("header_authentication. strategy valid? #{answer}.")
         return answer
       end 
