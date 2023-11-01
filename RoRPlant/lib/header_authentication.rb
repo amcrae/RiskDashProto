@@ -4,17 +4,25 @@ require 'devise'
 
 # Functions as an adaptor between ID & Role tokens supplied in HTTP Headers
 #  and the Devise framework for authentication in Rails.
+# In the below description the steps which require custom code have '+C'.
 # The order of events will be:
 #   1. The Rack chain receives an HTTP request
 #   2. Association of request with existing session is done by default SessionStore middleware.
 #   3. The HeaderAuthentication middleware is called
-#   3.1 The headers are checked to see if all required ones are present,
+#   3.1 The headers are checked to see if all required ones are present, +C
 #   3.2 If all headers are there, a flag enabling header authentication is stored in session.
 #   3.2.2 If NOT, make sure any persistent userid in session is logged out.
-#   3.3 All token signatures are verified. May assume they remain valid for a limited period (e.g. 5 seconds).
-#   3.4 The application UPN is extracted from the identity token and stored in session.
-#   3.5 If the User does not exist, it is created from the the role+id tokens and saved to DB.
-#   3.6 User's granted app roles are derived from the claims token, and are updated in ActiveRecord.
+#   3.3 All token signatures are verified. +C 
+#       May assume they remain valid for a limited period (e.g. 5 seconds).
+#   3.4 The application UPN is extracted from the identity token (+C) and stored in session.
+#   3.5 A valid user account object is loaded.
+#   3.5.1 Determine if an account exists for the UPN and load it. +C
+#   3.5.2 Check if the application permits the user to be authenticated externally. +C
+#   3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
+#   3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB. +C
+#   3.6 User account is granted any updated roles
+#   3.6.1 User's granted app roles are derived from the claims token (+C),
+#   3.6.2 The new list of roles are applied to the account (+C) and saved by ActiveRecord.
 #   4. Warden calls 'valid?'. 
 #   4.1 The answer already stored in session hash is returned.
 #   5. Warden (may) call 'authenticate!'. 
@@ -23,6 +31,12 @@ require 'devise'
 #   6. Warden sets the value of current_user and similar helper objects for use by authorisation.
 #   7. Any authorisation framework which reads current_user (e.g. cancancan) or could use the UPN.
 #
+# Some assumptions about the host application are:
+#  * The object representing a user account is assumed to inherit ActiveRecord::Base methods.
+#  * The object representing a user account is assumed to implement the Devise Trackable module.
+#  * Local traditional password authentication may also occur for some users, but...
+#  * Each user must be authenticated by only one method for that user always.
+# 
 # The application-specific methods of verifying headers and loading User accounts
 # are expected to be done by implementing classes that mixin HeaderAuthentication.
 module HeaderAuthentication
@@ -69,6 +83,8 @@ module HeaderAuthentication
     @load_user_method = self.method(@header_config[:load_user_from_upn_function]);
     @new_user_method = self.method(@header_config[:create_user_from_template_function]);
     @set_roles_method = self.method(@header_config[:set_user_roles_function]);
+    @extract_upn_method = self.method(@header_config[:get_upn_from_user_function]);
+    @user_needs_headerauth_method = self.method(@header_config[:user_needs_headerauth_function]);
 
     skip_resource = false
     for pathroot in @header_config[:ignore_resource_paths]
@@ -90,13 +106,13 @@ module HeaderAuthentication
 
     if extractions.length == 0 then
       Rails.logger.error("No headers configured for HeaderAuthentication #{@config_name}")
-      # do nothing but allow rest of chain to run. No authentication.
-      return @app.call(env)
+      clear_session_vars(req, sesh);
+      res = Rack::Response.new("Web server configuration problem", 500, {})
+      return [res.status, res.headers, res.body]
     end
 
     # step 3.1
     all_present = true
-
     for extraction_def in extractions
       header_name = extraction_def[:http_header]
       header_cgi_name = cgize_name(header_name)
@@ -105,22 +121,27 @@ module HeaderAuthentication
       all_present = all_present && (present || !required)
     end
     
+    # The session hash still has signed of previous ext authentication
+    # however the auth headers are not longer being received.
     signout_detected = sesh.has_key?(SESS_KEY_HA_STRATEGY_VALID) && \
                        sesh[SESS_KEY_HA_STRATEGY_VALID] == true && \
+                       sesh.has_key?(SESS_KEY_HA_AUTH_USER) &&
                        !all_present
 
     # step 3.2
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     if !all_present then
-      puts "HeaderAuthentication found no auth headers."
+      Rails.logger.info("HeaderAuthentication found no auth headers.")
       if signout_detected then
-        puts "signout detected, Clearing auth session variables."
+        old_upn = @extract_upn_method.call(sesh[SESS_KEY_HA_AUTH_USER])
+        Rails.logger.info("External signout detected from old session of #{old_upn}, clearing auth session variables.")
         clear_session_vars(req, sesh);
       end
       return @app.call(env)
     end
 
     upn = nil
+    account = nil
     user_template = {}
     user_roles = []
 
@@ -128,7 +149,7 @@ module HeaderAuthentication
     all_verified = true
     extractions.each_with_index { |extraction_hash, i|
       header_name = extraction_hash[:http_header]
-      puts "HeaderAuth step #{i} #{header_name}"
+      # puts "HeaderAuth step #{i} #{header_name}"
       header_cgi_name = cgize_name(header_name)
       present = req.has_header?(header_cgi_name);
       header_value = req.get_header(header_cgi_name);
@@ -139,9 +160,11 @@ module HeaderAuthentication
         all_verified = all_verified && verified;
       end
       if verified != false then
+        # extraction functions are only called on verified headers.
+        # step 3.6.1 will actually be done early, assumed to update user_roles object.
         res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
         if @header_config[:user_upn_extraction_step].to_i == i then
-          puts "HeaderAuth found upn"
+          # puts "HeaderAuth found upn"
           upn = res
         end
         if @header_config.has_key?(:validator_function_name) then
@@ -157,23 +180,45 @@ module HeaderAuthentication
     # Step 3.4
     if all_verified && upn != nil then
       sesh[SESS_KEY_HA_AUTH_UPN] = upn;
-      puts "HeaderAuthentication identified #{upn}."
+      ts = Time.now()
+      Rails.logger.info("#{ts} *** HeaderAuthentication identified #{upn}.")
       leave_calling_card = false || (@header_config[:return_auth_method_header] == true);
 
-      # step 3.5
+      # 3.5.1 Determine if an account exists for the UPN and load it.
       account = @load_user_method.call(upn);
-      if account == nil then
-        account = @new_user_method.call(user_template);
-        account.save()
+      # 3.5.2 Check if the application permits the user to be authenticated externally.
+      needs_header_auth = nil
+      if (account != nil) then 
+        needs_header_auth = @user_needs_headerauth_method.call(account); 
       end
-      
-      # step 3.6
-      @set_roles_method.call(user_roles, account)
-      account.save()
-      sesh[SESS_KEY_HA_AUTH_USER] = account
+      if account != nil && needs_header_auth == false then
+        # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
+        ts = Time.now()
+        Rails.logger.warn(
+          "#{ts} *** Valid external headers were provided for a non-external user #{upn}.\
+           Abandoning request and clearing auth session variables."
+        );
+        clear_session_vars(req, sesh);
+        res = Rack::Response.new("", 401, {})
+        return [res.status, res.headers, res.body]
+      else
+        # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
+        if account == nil then
+          account = @new_user_method.call(user_template);
+          account.update_tracked_fields!(env) # Devise trackable
+        end
+
+        # step 3.6.2  Done with updated user_roles object.
+        @set_roles_method.call(user_roles, account)
+        account.save()
+        sesh[SESS_KEY_HA_AUTH_USER] = account
+      end
     else
-      puts "HeaderAuthentication found no UPN from any valid headers."
-      puts "clearing auth session variables."
+      ts = Time.now()
+      Rails.logger.info(
+        "#{ts} HeaderAuthentication found no UPN from any valid headers.\
+        Clearing auth session variables."
+      )
       clear_session_vars(req, sesh);
     end
 
@@ -274,7 +319,6 @@ module HeaderAuthentication
     
       def authenticate! 
         # code here for doing authentication;
-        # if successful, call  
         Rails.logger.debug("header_authentication.UPN?")
         if session.has_key?(SESS_KEY_HA_AUTH_UPN) \
           && session[SESS_KEY_HA_AUTH_UPN] != nil \
@@ -282,8 +326,9 @@ module HeaderAuthentication
         then
           upn = session[SESS_KEY_HA_AUTH_UPN]
           user = session[SESS_KEY_HA_AUTH_USER]
+          ts = Time.now()
           if user != nil then 
-            Rails.logger.info("HeaderAuthentication replied to Warden with #{upn}.")
+            Rails.logger.info("#{ts} *** HeaderAuthentication replied to Warden with account for #{upn}.")
             return success!(user)
           end
         end
