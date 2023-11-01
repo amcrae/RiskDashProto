@@ -1,38 +1,19 @@
 require 'rails_helper'
 require 'misc_util'
 
-RSpec.describe PlantController, type: :controller do
-  # Current problem: Only a :request -type spec
-  #  will drive the whole Rack middleware chain, which is
-  #  needed for running the header authentication step.
-  #  But only a :controller -type spec will get access to
-  #  a controller as a subject and this type does not run the
-  #  whole request chain (the results of which are expected
-  #  to be mocked such as injecting request headers as part
-  #  of the setup prior to a GET call.)
-  # There is no out-of-the-box RSpec standard spec type which
-  #  can start with an HTTP request and end with the result
-  #  of the final controller object as the test subject.
-  it "contains no User when given no auth headers" do
-    # this get will run the controller.
-    puts "Controller-type test"
-    get :index # "http://127.0.0.1:3000/"
-    # but no other Rails middleware ran before it, so the next line
-    # raises "Devise could not find the `Warden::Proxy` instance on your request environment"
-    expect(assigns(:usr_signed_in)).to eq(false);
-  end
+# Current problem: Only a :request -type spec
+#  will drive the whole Rack middleware chain, which is
+#  needed for running the header authentication step.
+#  But only a :controller -type spec will get access to
+#  a controller as a subject and this type does not run the
+#  whole request chain (the results of which are expected
+#  to be mocked such as injecting request headers as part
+#  of the setup prior to a GET call.)
+# There is no out-of-the-box RSpec standard spec type which
+#  can start with an HTTP request and end with the result
+#  of the final controller object as the test subject.
 
-  it "returns the user2 User via Devise when given user2 tokens" do
-    # the get will not route to middleware and controller
-    # because this is a :controller type spec/example.
-    puts "Controller-type test"
-    get(root_path + "?a=/MOCKPROXY/user2")
-    expect(assigns(:usr_signed_in)).to eq(true);
-    expect(assigns(:cur_usr).email).to eq("user2@example.com")
-  end
-  
-end
-
+# Use Request-type spec since it is the simplest type that drives middleware.
 RSpec.describe "authn middleware request", type: :request do
   # fixtures :users # does not work because 'password' is a property not a DB column
 
