@@ -49,16 +49,6 @@ end
 RSpec.describe "authn middleware request", type: :request do
   # fixtures :users # does not work because 'password' is a property not a DB column
 
-  let!(:u_one) { 
-    u1 = User.new(
-      auth_type: "LOCAL",
-      email: "user1@example.com", password: "scoTTY", full_name: "Montgomery Scott", role_name: "TECHNICIAN"
-    );
-    u1.save();
-    u1.reload();
-    u1
-  }
-
   it "contains no User when given no auth headers" do
     get root_path # "http://127.0.0.1:3000/"
     expect(session['warden.user.user.key']).to be_nil
@@ -78,8 +68,6 @@ RSpec.describe "authn middleware request", type: :request do
   it "returns the old user2 User via Devise when given user2 tokens" do
     # users(:u_two)
 
-    # puts "Using LETted object #{u_one}"
-    # u2_ll0 = u_one().last_sign_in_at
     get(root_path + "?a=/MOCKPROXY/user2")
 
     expect(session['warden.user.user.key']).not_to be_nil
@@ -154,8 +142,37 @@ RSpec.describe "Page authn results", type: :system do
     driven_by(:selenium_headless);
   end
 
+  let!(:u_one) { 
+    u1 = User.new(
+      auth_type: "LOCAL",
+      email: "user1@example.com", password: "scoTTY", full_name: "Montgomery Scott", role_name: "TECHNICIAN"
+    );
+    u1.save();
+    return u1
+  }
+
   it "returns the user2 User via Devise when given user2 tokens", driver: :selenium_headless do
-    visit("http://127.0.0.1:3000" + root_path + "?a=/MOCKPROXY/user2");
+    visit(root_path + "?a=/MOCKPROXY/user2");
+    expect(page).to have_text("User McTwo");
+    u2 = User.find_by(email: "user2@example.com")
+    expect(u2).not_to be_nil
+    visit(root_path);
     expect(page).to have_text("User McTwo");
   end
+
+  it "returns the user1 User via Devise after local login with no tokens", driver: :selenium_headless do
+    # puts "Using LETted object #{u_one()} #{u_one.email}"
+    # u2_ll0 = u_one().last_sign_in_at
+    u_one().save()
+    visit(root_path + "?a=/MOCKPROXY/scrub");
+    
+    visit(root_path);
+    click_button "Sign in"
+    fill_in :with => "user1@example.com", :name => "user[email]"
+    fill_in :with => "scoTTY", :name => "user[password]"
+    click_button "Log in"
+
+    expect(page).to have_text("Montgomery Scott");
+  end
+  
 end
