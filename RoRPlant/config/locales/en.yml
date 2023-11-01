@@ -31,3 +31,4 @@
 
 en:
   hello: "Hello world"
+  auth_method_not_permitted: "Account Not Authorized to authenticate this way."
