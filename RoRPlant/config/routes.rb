@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: { sessions: 'session' }
+
   post 'asset_status/sabotage'
   post 'asset_status/repair'
   get 'asset_status/show'
