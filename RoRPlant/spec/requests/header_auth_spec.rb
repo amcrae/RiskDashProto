@@ -164,5 +164,16 @@ RSpec.describe "Page authn results", type: :system do
 
     expect(page).to have_text("Montgomery Scott");
   end
+
+  it "No user is loged in after the user2 User ceases sending authentication tokens", driver: :selenium_headless do
+    Rails.logger.debug "Browser test 3"
+    visit(root_path + "?a=/MOCKPROXY/user2");
+    # User should have been created from tokens at this point
+    expect(page).to have_text("User McTwo");
+    visit(root_path + "?a=/MOCKPROXY/scrub");
+    # And identity persists in session over multiple requests.
+    visit(root_path);
+    expect(page).to have_text("You are not logged in.");
+  end
   
 end
