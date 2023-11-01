@@ -1,0 +1,27 @@
+
+_fixture:
+  model_class: User
+
+u_one:
+  id: 1
+  auth_type: "LOCAL"
+  email: "user1@example.com"
+  password: "scoTTY"
+  full_name: "Montgomery Scott"
+  role_name: "TECHNICIAN"
+
+u_two:
+  id: 2
+  auth_type: "EXTERNAL"
+  email: "user2@example.com"
+  password: "abc_123"
+  full_name: "User McTwo"
+  role_name: "TECHNICIAN"
+
+u_three:
+  id: 3
+  auth_type: "EXTERNAL"
+  email: "user3@example.com"
+  password: "3v!l_Inc" 
+  full_name: "Terry Wrist"
+  role_name: "TERRORIST"
