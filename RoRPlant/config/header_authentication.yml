@@ -3,6 +3,8 @@ development:
     Mock:
       ignore_resource_paths: ["/assets", "/3rdparty"]
       load_user_from_upn_function: user_from_upn
+      get_upn_from_user_function: upn_from_user
+      user_needs_headerauth_function: user_has_ext_authn
       create_user_from_template_function: new_user
       set_user_roles_function: set_user_roles
       header_extractions:
@@ -35,6 +37,8 @@ test:
     Mock:
       ignore_resource_paths: ["/assets", "/3rdparty"]
       load_user_from_upn_function: user_from_upn
+      get_upn_from_user_function: upn_from_user
+      user_needs_headerauth_function: user_has_ext_authn
       create_user_from_template_function: new_user
       set_user_roles_function: set_user_roles
       header_extractions:
@@ -58,6 +62,6 @@ test:
           extraction_function_name: nop
           validator_function_name: upn_match_to_template
       user_upn_extraction_step: 2
-      signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN]  #  session_id, warden.user.user.key
+      signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, session_id, warden.user.user.key]
       signout_clears_session: false
       return_auth_method_header: true

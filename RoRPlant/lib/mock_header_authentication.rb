@@ -57,6 +57,15 @@ class MockHeaderAuthentication
     return User.find_by(email: upn)
   end
 
+  def upn_from_user(account)
+    puts "upn_from_user"
+    return account.email
+  end
+
+  def user_has_ext_authn(account)
+    return account.auth_type == 'EXTERNAL'
+  end
+
   def set_user_roles(role_array, account)
     # In this basic user model they only had 1 role.
     account.role_name = role_array[0]
@@ -65,9 +74,10 @@ class MockHeaderAuthentication
   def new_user(user_template) 
     init_pw = Digest::SHA1.hexdigest(Random.bytes(8));
     account = User.new(
+      auth_type: "EXTERNAL", # authentication continues to be by headers
       email: user_template['mail'], 
-      full_name: user_template['fullname'], 
-      password: init_pw
+      full_name: user_template['fullname'],
+      password: init_pw # Not used due to external auth, but cannot be NULL.
     );
     return account;
   end
