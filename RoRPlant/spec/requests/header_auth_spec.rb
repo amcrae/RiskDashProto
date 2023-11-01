@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'misc_util'
 
 RSpec.describe PlantController, type: :controller do
   # Current problem: Only a :request -type spec
@@ -14,6 +15,7 @@ RSpec.describe PlantController, type: :controller do
   #  of the final controller object as the test subject.
   it "contains no User when given no auth headers" do
     # this get will run the controller.
+    puts "Controller-type test"
     get :index # "http://127.0.0.1:3000/"
     # but no other Rails middleware ran before it, so the next line
     # raises "Devise could not find the `Warden::Proxy` instance on your request environment"
@@ -23,6 +25,7 @@ RSpec.describe PlantController, type: :controller do
   it "returns the user2 User via Devise when given user2 tokens" do
     # the get will not route to middleware and controller
     # because this is a :controller type spec/example.
+    puts "Controller-type test"
     get(root_path + "?a=/MOCKPROXY/user2")
     expect(assigns(:usr_signed_in)).to eq(true);
     expect(assigns(:cur_usr).email).to eq("user2@example.com")
@@ -30,24 +33,18 @@ RSpec.describe PlantController, type: :controller do
   
 end
 
-class ToDoList
-  attr_reader :todo, :done
-  
-  def initialize(todolist)
-    @todo = [] # ensure copy
-    @todo += todolist
-    @done = []
-  end
-
-  def complete_item(item)
-    @todo.slice!(@todo.index(item))
-    @done.append(item)
-  end
-
-end
-
 RSpec.describe "authn middleware request", type: :request do
   # fixtures :users # does not work because 'password' is a property not a DB column
+
+  let!(:u_two) { 
+    u2 = User.new(
+      auth_type: "EXTERNAL",
+      email: "user2@example.com", password: "abc_123", 
+      full_name: "User McTwo", role_name: "TECHNICIAN"
+    );
+    u2.save();
+    return u2
+  }
 
   it "contains no User when given no auth headers" do
     get root_path # "http://127.0.0.1:3000/"
@@ -55,48 +52,57 @@ RSpec.describe "authn middleware request", type: :request do
     expect(response.body).to include("You are not logged in.")
   end
 
-  it "returns the new user2 User via Devise when given user2 tokens" do
+  it "returns the novel user2 User via Devise when given user2 tokens" do
+    Rails.logger.debug "Request-type test 1"
     get(root_path + "?a=/MOCKPROXY/user2")
-
+    puts "session == #{session.to_json}"
     expect(session['warden.user.user.key']).not_to be_nil
-    u2_ll1 = User.find_by(email: "user2@example.com").last_sign_in_at
-    expect(u2_ll1).not_to be_nil
+    u2 = User.find_by(email: "user2@example.com")
+    expect(u2).not_to be_nil
+    expect(u2.auth_type).to eq("EXTERNAL")
     expect(response.status).to eq(200)
     expect(response.body).to include("User McTwo")
   end
 
   it "returns the old user2 User via Devise when given user2 tokens" do
+    Rails.logger.debug "Request-type test 2"
     # users(:u_two)
+    u_two()
 
     get(root_path + "?a=/MOCKPROXY/user2")
 
+    puts "session == #{session.to_json()}"
     expect(session['warden.user.user.key']).not_to be_nil
-    
     expect(response.status).to eq(200)
     expect(response.body).to include("User McTwo")
   end
 
   it "updates User attributes via Devise when given user2 tokens" do
+    Rails.logger.debug "Request-type test 3"
     # users(:u_two)
-
+    u_two()
     u2_0 = User.find_by(email: "user2@example.com")
-    u2_ll0 = u2_0.last_sign_in_at
+    u2_csi0 = u2_0.current_sign_in_at
     u2_sic0 = u2_0.sign_in_count
-    puts "last_sign_in_at #{u2_ll0}"
-    expect(u2_ll0).not_to be_nil
+    puts "last_sign_in_at #{u2_csi0}"
+    expect(u2_sic0).not_to be_nil
 
     get(root_path + "?a=/MOCKPROXY/user2")
     
-    puts "lookupid #{u2_0.id}"
+    puts "lookup user id #{u2_0.id}"
     u2_1 = User.find(u2_0.id)
-    u2_ll1 = u2_1.last_sign_in_at
-    expect(u2_ll1).to satisfy("signin timestamp was incremented") { |x| x > u2_ll0}
-    puts "TS #{u2_ll0} was updated #{u2_ll1}"
-    expect(u2_1.sign_in_count).to satisfy("count incremented") { |x| x > u2_sic0 }
+    u2_csi1 = u2_1.current_sign_in_at
+    u2_sic1 = u2_1.sign_in_count
+    puts "CSI ts #{u2_csi0} was updated #{u2_csi1}"
+    expect(u2_sic1).to satisfy("count incremented by 1") { |x| x == u2_sic0 + 1 }
+    expect(u2_csi1).not_to be_nil
   end
 
   it "logs the authenticated user2 actions when given user2 tokens" do
+    Rails.logger.debug "Request-type test 4"
     # users(:u_two)
+    u_two()
+
     logfile = Rails.logger.instance_variable_get("@logdev").instance_variable_get("@dev")
     logname = logfile.path
 
@@ -112,7 +118,7 @@ RSpec.describe "authn middleware request", type: :request do
     
     counter = 0
     find_goals = [
-      "HeaderAuthentication replied to Warden with user2@example.com",
+      "HeaderAuthentication replied to Warden with account for user2@example.com",
       "*** User user2@example.com executing"
     ]
     progress = ToDoList.new(find_goals)
@@ -152,17 +158,20 @@ RSpec.describe "Page authn results", type: :system do
   }
 
   it "returns the user2 User via Devise when given user2 tokens", driver: :selenium_headless do
+    Rails.logger.debug "Browser test 1"
     visit(root_path + "?a=/MOCKPROXY/user2");
+    # User should have been created from tokens at this point
     expect(page).to have_text("User McTwo");
     u2 = User.find_by(email: "user2@example.com")
     expect(u2).not_to be_nil
+    # And identity persists in session over multiple requests.
     visit(root_path);
     expect(page).to have_text("User McTwo");
   end
 
   it "returns the user1 User via Devise after local login with no tokens", driver: :selenium_headless do
+    Rails.logger.debug "Browser test 2"
     # puts "Using LETted object #{u_one()} #{u_one.email}"
-    # u2_ll0 = u_one().last_sign_in_at
     u_one().save()
     visit(root_path + "?a=/MOCKPROXY/scrub");
     
