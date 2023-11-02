@@ -12,7 +12,7 @@ gem "sprockets-rails"
 # Use sqlite3 as the database for Active Record
 gem "sqlite3", "~> 1.4"
 
-# required by the 'test-helper' script in rails.
+# required by the 'test-helper' script in rgem 'cancancan'ails.
 gem 'test-unit'
 
 # Use the Puma web server [https://github.com/puma/puma]
@@ -32,6 +32,9 @@ gem "jbuilder"
 
 # include devise framework for user management and authentication.
 gem "devise", '~> 4.9', '>= 4.9.3'
+
+# authorisation concern
+gem 'cancancan'
 
 # handy for synthetic data
 gem "perlin_noise"
