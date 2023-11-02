@@ -13,16 +13,20 @@ class MockHeaderAuthentication
     configure(app, configname);
   end
 
-  def mock_key(*args)
+  def self.nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+    return header_value
+  end
+
+  def self.mock_key(*args)
     return 'SECRET'
   end
 
-  def decode_homebrew(header_value)
+  def self.decode_homebrew(header_value)
     decoded = Base64.decode64(header_value);
     return decoded.split('|')
   end
 
-  def mock_sig_validation(header_value, signing_key)
+  def self.mock_sig_validation(header_value, signing_key)
     puts "mock_sig_validation"
     data, sig_rcvd = decode_homebrew(header_value) 
     prefixed = signing_key + '|' + data
@@ -31,14 +35,14 @@ class MockHeaderAuthentication
   end
 
   # get user attributes from the mock access-token during prototyping.
-  def get_user_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def self.get_user_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     data, sig_rcvd = decode_homebrew(header_value) 
     user_hash = JSON.parse(data)
     user_template.update(user_hash)
     return user_hash
   end
 
-  def mock_extract_roles(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def self.mock_extract_roles(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     data, sig_rcvd = decode_homebrew(header_value) 
     user_hash = JSON.parse(data)
     given_ext_roles = user_hash['memberOf']
@@ -47,31 +51,37 @@ class MockHeaderAuthentication
     return given_ext_roles
   end
 
-  def verify_match_to_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def self.verify_match_to_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     puts "verify_match_to_template"
     return header_value == user_template['upn']
   end
 
-  def user_from_upn(upn)
+  def self.user_from_upn(upn)
     puts "user_from_upn"
     return User.find_by(email: upn)
   end
 
-  def upn_from_user(account)
+  def self.upn_from_user(account)
     puts "upn_from_user"
-    return account.email
+    if account.is_a?(Hash) then
+      return account[:email]
+    elsif account.is_a?(User) then
+      return account.email
+    end
+
+    raise TypeError.new("Unexpected user account type #{account.class}")
   end
 
-  def user_has_ext_authn(account)
+  def self.user_has_ext_authn(account)
     return account.auth_type == 'EXTERNAL'
   end
 
-  def set_user_roles(role_array, account)
+  def self.set_user_roles(role_array, account)
     # In this basic user model they only had 1 role.
     account.role_name = role_array[0]
   end
 
-  def new_user(user_template) 
+  def self.new_user(user_template) 
     init_pw = Digest::SHA1.hexdigest(Random.bytes(8));
     account = User.new(
       auth_type: "EXTERNAL", # authentication continues to be by headers
@@ -84,7 +94,7 @@ class MockHeaderAuthentication
 
   # To be called from Rails application-level config to install the custom auth functions.
   def self.add_to_warden(config_name)
-    @@add_to_warden.call(self, config_name)
+    @@add_to_warden_method.call(self, config_name)
   end
 
 end

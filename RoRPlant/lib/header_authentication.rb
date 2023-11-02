@@ -47,6 +47,8 @@ module HeaderAuthentication
 
   SESS_KEY_HA_AUTH_USER = '_HAUTH_USER';
 
+  @@all_config = nil
+
   # shared function to produce an authn strategy name from configured class.
   def self.class_config_to_strategy(subclass, config_name)
     # In case of permitting two different authentications for 
@@ -58,8 +60,7 @@ module HeaderAuthentication
   def configure(app, configname)
     @app = app
     @config_name = configname
-    all_config = Rails.application.config_for(:header_authentication)
-    @header_config = all_config[:header_configs][@config_name.to_sym];
+    @@all_config ||= Rails.application.config_for(:header_authentication)
   end
 
   def cgize_name(real_name) 
@@ -75,16 +76,16 @@ module HeaderAuthentication
 
     # reloads config file each call.
     # TODO: remove as performance improvement, as changing params is infrequent after init development.
-    all_config = Rails.application.config_for(:header_authentication)
+    # all_config = Rails.application.config_for(:header_authentication)
 
-    @header_config = all_config[:header_configs][@config_name.to_sym];
+    @header_config = @@all_config[:header_configs][@config_name.to_sym];
     extractions = @header_config[:header_extractions]
 
-    @load_user_method = self.method(@header_config[:load_user_from_upn_function]);
-    @new_user_method = self.method(@header_config[:create_user_from_template_function]);
-    @set_roles_method = self.method(@header_config[:set_user_roles_function]);
-    @extract_upn_method = self.method(@header_config[:get_upn_from_user_function]);
-    @user_needs_headerauth_method = self.method(@header_config[:user_needs_headerauth_function]);
+    @load_user_method = self.class.method(@header_config[:load_user_from_upn_function]);
+    @new_user_method = self.class.method(@header_config[:create_user_from_template_function]);
+    @set_roles_method = self.class.method(@header_config[:set_user_roles_function]);
+    @extract_upn_method = self.class.method(@header_config[:get_upn_from_user_function]);
+    @user_needs_headerauth_method = self.class.method(@header_config[:user_needs_headerauth_function]);
 
     skip_resource = false
     for pathroot in @header_config[:ignore_resource_paths]
@@ -133,7 +134,11 @@ module HeaderAuthentication
     if !all_present then
       Rails.logger.info("HeaderAuthentication found no auth headers.")
       if signout_detected then
-        old_upn = @extract_upn_method.call(sesh[SESS_KEY_HA_AUTH_USER])
+        old_account_obj = sesh[SESS_KEY_HA_AUTH_USER];
+        # The :get_upn_from_user_function may be passed a Hash of the fields
+        # instead of the original ActiveRecord account object,
+        # due to web session state being serialised to storage.
+        old_upn = @extract_upn_method.call(old_account_obj)
         Rails.logger.info("External signout detected from old session of #{old_upn}, clearing auth session variables.")
         clear_session_vars(req, sesh);
       end
@@ -168,7 +173,7 @@ module HeaderAuthentication
           upn = res
         end
         if @header_config.has_key?(:validator_function_name) then
-          validator = self.method(@header_config[:validator_function_name])
+          validator = self.class.method(@header_config[:validator_function_name])
           passes = validator.call(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
           all_verified &= passes
         end  
@@ -249,14 +254,14 @@ module HeaderAuthentication
 
     signing_key = nil
     if extraction_hash.has_key?(:get_signing_key) 
-      get_key_fun = self.method(extraction_hash[:get_signing_key])
+      get_key_fun = self.class.method(extraction_hash[:get_signing_key])
       signing_key = get_key_fun.call(extraction_hash[:signing_key_args])
     end
     
     # Allow for multiple extractions on same header token without re-verifying same data.
     verified = nil
     if extraction_hash.has_key?(:sig_verifier) then
-      verifier = self.method(extraction_hash[:sig_verifier]);
+      verifier = self.class.method(extraction_hash[:sig_verifier]);
       if signing_key != nil and verifier != nil then
         verified = verifier.call(token, signing_key);
       end
@@ -266,7 +271,7 @@ module HeaderAuthentication
 
   def extract_auth_info(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     if extraction_hash.has_key?(:extraction_function_name) then
-      extractor = self.method(extraction_hash[:extraction_function_name]);
+      extractor = self.class.method(extraction_hash[:extraction_function_name]);
       return extractor.call(i, extraction_hash, header_value, req, sesh, user_template, user_roles);
     end
   end
@@ -289,7 +294,7 @@ module HeaderAuthentication
 
   # All custom extraction functions will be invokes with this signature.
   # This example does nothing but return the whole header value unmodified.
-  def nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def self.nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     return header_value
   end
 
@@ -301,14 +306,21 @@ module HeaderAuthentication
   # Parameters: 
   #   subclass: The Class object of the implementation.
   #   configname: The name of the parameter set that will be used from `header_authentication.yml`.
-  @@add_to_warden = ->(subclass, configname) {
+  @@add_to_warden_method = ->(subclass, configname) {
     # Check whether header-based authentication should be used
     # then identify the relevant user
     strategy_name = HeaderAuthentication::class_config_to_strategy(subclass, configname)
     Rails.logger.info("adding auth strategy #{strategy_name} ...")
 
+    @@all_config ||= Rails.application.config_for(:header_authentication)
+    header_config = @@all_config[:header_configs][configname.to_sym];
+    loader_name = header_config[:load_user_from_upn_function];
+    load_user_method = subclass.method(loader_name);
+    
     # Refer https://github.com/wardencommunity/warden/wiki/Strategies
     Warden::Strategies.add(strategy_name) do 
+      @@load_user_method = load_user_method
+
       def valid? 
         # code here to check whether to try and authenticate using this strategy; 
         answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
@@ -325,11 +337,12 @@ module HeaderAuthentication
           && session[SESS_KEY_HA_AUTH_USER] != nil \
         then
           upn = session[SESS_KEY_HA_AUTH_UPN]
-          user = session[SESS_KEY_HA_AUTH_USER]
+          # account = session[SESS_KEY_HA_AUTH_USER]
+          account = @@load_user_method.call(upn);
           ts = Time.now()
-          if user != nil then 
+          if account != nil then 
             Rails.logger.info("#{ts} *** HeaderAuthentication replied to Warden with account for #{upn}.")
-            return success!(user)
+            return success!(account)
           end
         end
         message = "Could not obtain User from session variable #{SESS_KEY_HA_AUTH_UPN}"
