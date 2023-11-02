@@ -40,17 +40,14 @@ module RoRPlant
     # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
     # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
     if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then
-      config.middleware.insert_after MockProxy, MockHeaderAuthentication, "Mock"
+      config.middleware.insert_before Warden::Manager, MockHeaderAuthentication, "Mock"
+      config.before_initialize do
+        MockHeaderAuthentication::add_to_warden("Mock");
+      end
     end
 
     config.active_job.queue_adapter = :delayed_job
     
     config.streamer_thread = nil
-
-    config.before_initialize do
-      # initialization code goes here
-      MockHeaderAuthentication::add_to_warden("Mock");
-    end
-
   end
 end
