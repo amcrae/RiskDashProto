@@ -18,7 +18,7 @@ class AssetStatusController < ApplicationController  # ActionController::API
       @asset.save();
       render partial: "asset_status/show", locals: { asset: @asset }
     rescue CanCan::AccessDenied => e
-      flash[:alert] = "Sabotage not permitted for user."
+      flash.now[:alert] = "Sabotage not permitted for user."
       render turbo_stream: [
         turbo_stream.replace("flash-messages", partial: "application/flash_message")
       ]
@@ -40,7 +40,7 @@ class AssetStatusController < ApplicationController  # ActionController::API
       end
       render partial: "asset_status/show", locals: { asset: @asset }
     rescue CanCan::AccessDenied
-      flash[:alert] = "Repair not permitted for user."
+      flash.now[:alert] = "Repair not permitted for user."
       render turbo_stream: [
         turbo_stream.replace("flash-messages", partial: "application/flash_message")
       ]

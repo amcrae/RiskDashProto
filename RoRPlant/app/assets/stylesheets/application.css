@@ -18,9 +18,22 @@ div.login_banner {
 	float:right; width:20em; border: solid 1px black;
 }
 
+#flash-messages {
+	min-height: 3em;
+}
+
 div.top_messages * {
 	float: right;
 }
+
+div.flash-alert {
+	color: red;
+	border: 1px solid red;
+}
+div.flash-notice {
+	color: darkblue;
+}
+
 
 #top_messages {
 	display: block;
