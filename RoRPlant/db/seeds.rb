@@ -106,7 +106,7 @@
     u2.save()
     
     u3 = User.new(
-      auth_type: "EXTERNAL",
+      auth_type: "LOCAL",
       email: "user3@example.com", password: "3v!l_Inc", full_name: "Terry Wrist", role_name: "TERRORIST"
     );
     u3.save()
