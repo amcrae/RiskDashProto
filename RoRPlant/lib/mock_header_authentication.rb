@@ -9,8 +9,11 @@ require 'base64'
 class MockHeaderAuthentication
   include HeaderAuthentication
 
+  @@role_mapping = nil
+
   def initialize(app, configname)
     configure(app, configname);
+    @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
   end
 
   def self.nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
@@ -42,13 +45,26 @@ class MockHeaderAuthentication
     return user_hash
   end
 
+  @@ext_to_native_role = ->(ext_name) {
+    uc = ext_name.upcase.to_sym
+    if @@role_mapping.has_key?(uc) then
+      return @@role_mapping[uc][0]
+    else
+      return ext_name
+    end
+  }
+
+  # The assumption is the roles returned are the ones used by
+  # this web application, so any mapping of external roles 
+  # into native app roles must also happen here.
   def self.mock_extract_roles(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
     data, sig_rcvd = decode_homebrew(header_value) 
     user_hash = JSON.parse(data)
     given_ext_roles = user_hash['memberOf']
-    delta = given_ext_roles - user_roles
-    user_roles.concat(delta)
-    return given_ext_roles
+    given_native_roles = given_ext_roles.map(&@@ext_to_native_role)
+    user_roles.clear()
+    user_roles.concat(given_native_roles)
+    return given_native_roles
   end
 
   def self.verify_match_to_template(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
