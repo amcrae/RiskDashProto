@@ -30,11 +30,13 @@ class PlantController < ApplicationController
       seg = Segment.new(id:r["id"], shortname:r["shortname"], segtype:r["segtype"], operational:r["operational"], parent_id:r["parent_id"]);
       seg.level = r["level"]
       seg.path = r["connect_by_path"]
+      authorize! :read, seg
       asset = nil
       if r["asset_id"] != nil then
         Rails.logger.debug( { id: r["asset_id"], uuid: r["asset_uuid"], shortname: r["asset_name"], readiness: r["readiness"] } );
         asset = Asset.new(id: r["asset_id"], uuid: r["asset_uuid"], shortname: r["asset_name"], asset_type:r["asset_type"], readiness: r["readiness"] );
         Rails.logger.debug([asset, asset.id, asset.uuid].join(", "));
+        authorize! :read, asset
       end
       pair = {seg: seg, asset: asset};
       tree_order.push(pair);
