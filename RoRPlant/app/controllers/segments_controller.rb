@@ -1,9 +1,9 @@
 class SegmentsController < ApplicationController
-  before_action :set_segment, only: %i[ show edit update destroy ]
+  before_action :set_segment, only: %i[show edit update destroy]
 
   # GET /segments or /segments.json
   def index
-    @segments = Segment.all
+    @segments = Segment.all.accessible_by(current_ability)
   end
 
   # GET /segments/1 or /segments/1.json
@@ -22,6 +22,7 @@ class SegmentsController < ApplicationController
   # POST /segments or /segments.json
   def create
     @segment = Segment.new(segment_params)
+    authorize! :create, @segment
 
     respond_to do |format|
       if @segment.save
@@ -36,6 +37,7 @@ class SegmentsController < ApplicationController
 
   # PATCH/PUT /segments/1 or /segments/1.json
   def update
+    authorize! :write, @segment
     respond_to do |format|
       if @segment.update(segment_params)
         format.html { redirect_to segment_url(@segment), notice: "Segment was successfully updated." }
@@ -50,7 +52,7 @@ class SegmentsController < ApplicationController
   # DELETE /segments/1 or /segments/1.json
   def destroy
     @segment.destroy
-
+    authorize! :delete, @segment
     respond_to do |format|
       format.html { redirect_to segments_url, notice: "Segment was successfully destroyed." }
       format.json { head :no_content }
@@ -58,14 +60,15 @@ class SegmentsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_segment
-      @segment = Segment.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def segment_params
-      # params.fetch(:segment, {})
-      params.require(:segment).permit(:shortname, :segtype, :operational)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_segment
+    @segment = Segment.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def segment_params
+    # params.fetch(:segment, {})
+    params.require(:segment).permit(:shortname, :segtype, :operational)
+  end
 end
