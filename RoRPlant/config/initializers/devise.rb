@@ -311,11 +311,11 @@ Devise.setup do |config|
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
 
-  # add header authentication method as first method.
+  # add header authentication method as last method
   config.warden do |manager| 
     MockHeaderAuthentication::add_to_warden("Mock");
     user_auth_strategies = manager.default_strategies(scope: :user);
-    user_auth_strategies.unshift(
+    user_auth_strategies.append(
       HeaderAuthentication::class_config_to_strategy(MockHeaderAuthentication, "Mock")
     );
     # dbi = user_auth_strategies.index(:database_authenticatable)
