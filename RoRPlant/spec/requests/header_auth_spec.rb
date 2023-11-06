@@ -157,7 +157,7 @@ RSpec.describe "Page authn results", type: :system do
     visit(root_path + "?a=/MOCKPROXY/scrub");
     
     visit(root_path);
-    click_button "Sign in"
+    click_link "Local Sign-in"
     fill_in :with => "user1@example.com", :name => "user[email]"
     fill_in :with => "scoTTY", :name => "user[password]"
     click_button "Log in"
