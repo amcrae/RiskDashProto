@@ -204,7 +204,7 @@ module HeaderAuthentication
            Abandoning request and clearing auth session variables."
         );
         clear_session_vars(req, sesh);
-        res = Rack::Response.new("", 401, {})
+        res = Rack::Response.new("Valid external headers were provided for a non-external user #{upn}", 401, {})
         return [res.status, res.headers, res.body]
       else
         # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
@@ -322,7 +322,7 @@ module HeaderAuthentication
       @@load_user_method = load_user_method
 
       def valid? 
-        # code here to check whether to try and authenticate using this strategy; 
+        # code here to check whether to try to authenticate using this strategy; 
         answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
                  && !request.path.include?("sign_in")
         Rails.logger.info("header_authentication. strategy valid? #{answer}.")
