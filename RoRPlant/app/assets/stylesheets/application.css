@@ -14,8 +14,14 @@
  *= require_self
  */
 
-div.login_banner {
-	float:right; width:20em; border: solid 1px black;
+#login_banner {
+	float:right; width:20em; border: solid 1px black; padding: 5px;
+}
+
+.buttonesque {
+  border: outset 2px white;
+  padding: 1px;
+  background-color: lightgray;
 }
 
 #flash-messages {

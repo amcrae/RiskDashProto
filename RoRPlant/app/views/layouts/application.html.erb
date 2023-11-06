@@ -14,7 +14,7 @@
 
   <body>
     <div id='top_messages' class='messages_box'>
-      <div class="login_banner">
+      <div id="login_banner">
       <% if user_signed_in? %>
         <!-- Presented options depend on user's auth type. -->
         <%= current_user.full_name %><br/>
@@ -36,7 +36,7 @@
         <% else %>
           <!-- Permit login as a DB-authenticated user even if currently externally authenticaed. -->
           <% if [:APP_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then%>
-            <%= button_to "Local Sign-in", new_user_session_path %>
+            <%= link_to "Local Sign-in", new_user_session_path, class:'buttonesque' %>
           <% end %>
             <a href="?arg=/MOCKPROXY/scrub">mock logout</a>
         <% end %>
@@ -48,7 +48,7 @@
           Login is only by your proxy.
         <% end %>
         <% if [:APP_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then%>
-            <%= button_to "Local Sign-in", new_user_session_path %>
+            <%= link_to "Local Sign-in", new_user_session_path, class:'buttonesque' %>
         <% end %>
         <% # TODO: Debugging aid in absence of actual proxy server, to be removed when proxy involved.
           if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then 
