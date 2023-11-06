@@ -12,6 +12,7 @@ class MockProxy
 
   def initialize(app)
     @app = app
+    @active = false
   end
 
   def call(env)
@@ -38,7 +39,9 @@ class MockProxy
         detect_path = config[:set_on_intercepted_path]
         if req.fullpath().include?(detect_path)
           Rails.logger.info("MockProxy adding headers")
-          sesh[MockProxy::SESSION_VAR_CONFNAME] = conf_name
+          # sesh[MockProxy::SESSION_VAR_CONFNAME] = conf_name
+          @active = true
+          @confname = conf_name
         end
       end
       
@@ -46,16 +49,20 @@ class MockProxy
         detect_path = config[:remove_on_intercepted_path]
         if req.fullpath().include?(detect_path)
           Rails.logger.info("MockProxy removing headers")
-          sesh.delete(MockProxy::SESSION_VAR_CONFNAME)
+          # sesh.delete(MockProxy::SESSION_VAR_CONFNAME)
+          @active = false
+          @confname = nil
         end
       end
 
     end
 
     # Rails.logger.info("sesh #{MockProxy::SESSION_VAR_CONFNAME} == #{sesh[MockProxy::SESSION_VAR_CONFNAME]}")
-    if sesh.has_key?(MockProxy::SESSION_VAR_CONFNAME) && sesh[MockProxy::SESSION_VAR_CONFNAME] != nil
-      conf_name = sesh[MockProxy::SESSION_VAR_CONFNAME]
-      if conf_name != nil then set_headers(conf_name, req); end
+    # if sesh.has_key?(MockProxy::SESSION_VAR_CONFNAME) && sesh[MockProxy::SESSION_VAR_CONFNAME] != nil
+    if @active && @confname
+      # conf_name = sesh[MockProxy::SESSION_VAR_CONFNAME]
+      # if conf_name != nil then set_headers(conf_name, req); end
+      set_headers(@confname, req)
     end
 
     # call remainder of chain
