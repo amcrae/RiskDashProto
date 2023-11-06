@@ -1,5 +1,5 @@
 shared:
-  app_role_permissions:
+  app_role_permissions:  # not used yet
     TECHNICIAN:
       - asset.create
       - asset.read
@@ -17,6 +17,13 @@ production:
       - TERRORIST
 
 development:
+  provider_to_app:
+    X_STAFF_TECH_GRP: 
+      - TECHNICIAN
+    X_EXT_TERRORIST_GRP: 
+      - TERRORIST
+
+test:
   provider_to_app:
     X_STAFF_TECH_GRP: 
       - TECHNICIAN
