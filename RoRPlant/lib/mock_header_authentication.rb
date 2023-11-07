@@ -64,9 +64,18 @@ class MockHeaderAuthentication
   def self.query_directory_for_roles(extraction_hash, upn)
     user_portion = upn.split('@')[0]
     uri = extraction_hash[:directory_formula].sub("$USER", user_portion)
-    response = OpenURI.open_uri(uri)
-    groups = JSON.parse(response.read())
-    response.close();
+    body = nil
+    if uri.starts_with?('file:')
+      fpath = Pathname.new(uri[5..]).realpath()
+      File.open fpath, "r" do |file|
+        body = file.read()
+      end
+    else
+      response = OpenURI.open_uri(uri)
+      body = response.read();
+      response.close();
+    end
+    groups = JSON.parse(body)
     answer = [];
     for grp_obj in groups["value"]
       answer.append(grp_obj["id"])
