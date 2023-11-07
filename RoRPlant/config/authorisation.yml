@@ -22,6 +22,8 @@ development:
       - TECHNICIAN
     X_EXT_TERRORIST_GRP: 
       - TERRORIST
+    0c32830c-c1cd-5685-962e-2782c65e9cf0:
+      - TECHNICIAN
 
 test:
   provider_to_app:
@@ -29,3 +31,5 @@ test:
       - TECHNICIAN
     X_EXT_TERRORIST_GRP: 
       - TERRORIST
+    0c32830c-c1cd-5685-962e-2782c65e9cf0:
+      - TECHNICIAN
