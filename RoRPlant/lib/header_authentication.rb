@@ -145,10 +145,12 @@ module HeaderAuthentication
       return @app.call(env)
     end
 
-    upn = nil
-    account = nil
-    user_template = {}
-    user_roles = []
+    user_info = {
+      upn: nil,
+      app_account: nil,
+      user_attributes: {},
+      ext_roles_array: []
+    }
 
     # step 3.3
     all_verified = true
@@ -159,7 +161,7 @@ module HeaderAuthentication
       present = req.has_header?(header_cgi_name);
       header_value = req.get_header(header_cgi_name);
 
-      verified = verify_header(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+      verified = verify_header(i, extraction_hash, header_value, req, sesh, user_info)
       # Only extraction operations which specify a verifier should affect whether all headers were verified.
       if verified != nil then
         all_verified = all_verified && verified;
@@ -167,14 +169,14 @@ module HeaderAuthentication
       if verified != false then
         # extraction functions are only called on verified headers.
         # step 3.6.1 will actually be done early, assumed to update user_roles object.
-        res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+        res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_info)
         if @header_config[:user_upn_extraction_step].to_i == i then
           # puts "HeaderAuth found upn"
-          upn = res
+          user_info[:upn] = res
         end
         if @header_config.has_key?(:validator_function_name) then
           validator = self.class.method(@header_config[:validator_function_name])
-          passes = validator.call(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+          passes = validator.call(i, extraction_hash, header_value, req, sesh, user_info)
           all_verified &= passes
         end  
       end
@@ -183,40 +185,40 @@ module HeaderAuthentication
     leave_calling_card = false
 
     # Step 3.4
-    if all_verified && upn != nil then
-      sesh[SESS_KEY_HA_AUTH_UPN] = upn;
+    if all_verified && user_info[:upn] != nil then
+      sesh[SESS_KEY_HA_AUTH_UPN] = user_info[:upn];
       ts = Time.now()
-      Rails.logger.info("#{ts} *** HeaderAuthentication identified #{upn}.")
+      Rails.logger.info("#{ts} *** HeaderAuthentication identified #{user_info[:upn]}.")
       leave_calling_card = false || (@header_config[:return_auth_method_header] == true);
 
       # 3.5.1 Determine if an account exists for the UPN and load it.
-      account = @load_user_method.call(upn);
+      user_info[:account] = @load_user_method.call(user_info[:upn]);
       # 3.5.2 Check if the application permits the user to be authenticated externally.
       needs_header_auth = nil
-      if (account != nil) then 
-        needs_header_auth = @user_needs_headerauth_method.call(account); 
+      if (user_info[:account] != nil) then 
+        needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
       end
-      if account != nil && needs_header_auth == false then
+      if user_info[:account] != nil && needs_header_auth == false then
         # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
         ts = Time.now()
         Rails.logger.warn(
-          "#{ts} *** Valid external headers were provided for a non-external user #{upn}.\
+          "#{ts} *** Valid external headers were provided for a non-external user #{user_info[:upn]}.\
            Abandoning request and clearing auth session variables."
         );
         clear_session_vars(req, sesh);
-        res = Rack::Response.new("Valid external headers were provided for a non-external user #{upn}", 401, {})
+        res = Rack::Response.new("Valid external headers were provided for a non-external user #{user_info[:upn]}", 401, {})
         return [res.status, res.headers, res.body]
       else
         # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
-        if account == nil then
-          account = @new_user_method.call(user_template);
-          account.update_tracked_fields!(env) # Devise trackable
+        if user_info[:account] == nil then
+          user_info[:account] = @new_user_method.call(user_info);
+          user_info[:account].update_tracked_fields!(env) # Devise trackable
         end
 
         # step 3.6.2  Done with updated user_roles object.
-        @set_roles_method.call(user_roles, account)
-        account.save()
-        sesh[SESS_KEY_HA_AUTH_USER] = account
+        @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
+        user_info[:account].save()
+        sesh[SESS_KEY_HA_AUTH_USER] = user_info[:account]
       end
     else
       ts = Time.now()
@@ -241,7 +243,7 @@ module HeaderAuthentication
   end
   
   # Verification step can be done on all headers before extracting any info from them.
-  def verify_header(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def verify_header(i, extraction_hash, header_value, req, sesh, user_info)
     header_name = extraction_hash[:http_header]
     header_cgi_name = cgize_name(header_name);
     present = req.has_header?(header_cgi_name);
@@ -269,10 +271,10 @@ module HeaderAuthentication
     return verified
   end
 
-  def extract_auth_info(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def extract_auth_info(i, extraction_hash, header_value, req, sesh, user_info)
     if extraction_hash.has_key?(:extraction_function_name) then
       extractor = self.class.method(extraction_hash[:extraction_function_name]);
-      return extractor.call(i, extraction_hash, header_value, req, sesh, user_template, user_roles);
+      return extractor.call(i, extraction_hash, header_value, req, sesh, user_info);
     end
   end
 
@@ -294,7 +296,7 @@ module HeaderAuthentication
 
   # All custom extraction functions will be invokes with this signature.
   # This example does nothing but return the whole header value unmodified.
-  def self.nop(i, extraction_hash, header_value, req, sesh, user_template, user_roles)
+  def self.nop(i, extraction_hash, header_value, req, sesh, user_info)
     return header_value
   end
 
