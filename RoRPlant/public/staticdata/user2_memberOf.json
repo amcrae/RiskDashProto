@@ -1,0 +1,21 @@
+{
+ "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#directoryObjects",
+ "value": [
+    {
+        "@odata.type": "#microsoft.graph.group",
+        "id": "0c32830c-c1cd-5685-962e-2782c65e9cf0",
+        "deletedDateTime": null
+    },
+    {
+        "@odata.type": "#microsoft.graph.group",
+        "id": "0c32830c-c1cd-5685-962e-2782c65e9cf1",
+        "deletedDateTime": null
+    },
+    {
+        "@odata.type": "#microsoft.graph.group",
+        "id": "0c32830c-c1cd-5685-962e-2782c65e9cf2",
+        "deletedDateTime": null
+    }
+ ]
+}
+
