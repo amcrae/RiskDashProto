@@ -15,6 +15,11 @@ development:
           signing_key_args: [ "www.azure/PKCS/%kid%/key.gpg" ]
           sig_verifier: mock_sig_validation
           extraction_function_name: get_user_template
+        - 
+          http_header: x-auth-identity
+          required: true
+          extraction_function_name: nop
+          validator_function_name: upn_match_to_template
         -
           http_header: x-auth-data
           required: true
@@ -22,12 +27,8 @@ development:
           signing_key_args: [ "www.aws/PKCS/%kid%/key.gpg" ]
           sig_verifier: mock_sig_validation
           extraction_function_name: mock_extract_roles
-        - 
-          http_header: x-auth-identity
-          required: true
-          extraction_function_name: nop
-          validator_function_name: upn_match_to_template
-      user_upn_extraction_step: 2
+          directory_formula: "http://127.0.0.1:3000/staticdata/$USER_memberOf.json"
+      user_upn_extraction_step: 1
       signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, warden.user.user.key] # , session_id
       signout_clears_session: false
       return_auth_method_header: true
