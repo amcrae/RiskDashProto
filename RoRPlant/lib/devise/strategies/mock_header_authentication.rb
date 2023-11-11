@@ -4,16 +4,18 @@ require 'digest'
 require 'base64'
 require 'json'
 require 'open-uri'
+require_relative '../../header_authentication'
 
-# Subclass of HeaderAuthentication which provides custom functions
+# Subclass of Warden Strategy (via Devise) which provides custom functions
 # for verifying signatures of the homebrewed symmetric key signature 
 # scheme developed for testing.
-class MockHeaderAuthentication
+class MockHeaderAuthentication < Devise::Strategies::Base
   include HeaderAuthentication
 
   @@role_mapping = nil
 
   def initialize(app, configname)
+    super()
     configure(app, configname);
     @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
   end
