@@ -57,23 +57,28 @@ module HeaderAuthentication
     "#{subclass.to_s + "_" + config_name}".to_sym
   end
   
-  def configure(app, configname)
+  def configure_mw(app, configname)
     @app = app
-    @config_name = configname
     @@all_config ||= Rails.application.config_for(:header_authentication)
+    @config_name = configname
+    @header_config = @@all_config[:header_configs][@config_name.to_sym];
   end
 
   def cgize_name(real_name) 
     ("HTTP_" + real_name).upcase().sub('-', '_')
   end
 
-  def call(env)
-    req = Rack::Request.new(env);
-
-    # reconstructed = reconstruct_headers(env)
-    # sesh = req.session
-    sesh = env['rack.session']
-
+  # If the requested path has an intentionally non-secured prefix, this returns true.
+  def no_auth_resource?(req) 
+    for pathroot in @header_config[:ignore_resource_paths]
+      if req.fullpath.downcase.start_with?(pathroot.downcase) then
+        return true
+      end
+    end
+    return false
+  end
+  
+  def identify_user(req, sesh)
     # reloads config file each call.
     # TODO: remove as performance improvement, as changing params is infrequent after init development.
     # all_config = Rails.application.config_for(:header_authentication)
@@ -86,21 +91,6 @@ module HeaderAuthentication
     @set_roles_method = self.class.method(@header_config[:set_user_roles_function]);
     @extract_upn_method = self.class.method(@header_config[:get_upn_from_user_function]);
     @user_needs_headerauth_method = self.class.method(@header_config[:user_needs_headerauth_function]);
-
-    skip_resource = false
-    for pathroot in @header_config[:ignore_resource_paths]
-      if req.fullpath.downcase.start_with?(pathroot.downcase) then
-        skip_resource = true
-        break
-      end
-    end
-
-    if skip_resource then
-      # continue chain with no authentication requirement
-      Rails.logger.error("No authentication required for #{req.fullpath}")
-      # do nothing but allow rest of chain to run. No authentication.
-      return @app.call(env)
-    end
 
     # make sure no UPN leftover from previous invocations if authentication fails.
     sesh.delete(SESS_KEY_HA_AUTH_UPN);
@@ -172,6 +162,7 @@ module HeaderAuthentication
         res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_info)
         if @header_config[:user_upn_extraction_step].to_i == i then
           # puts "HeaderAuth found upn"
+          # step 3.4
           user_info[:upn] = res
         end
         if @header_config.has_key?(:validator_function_name) then
@@ -184,63 +175,53 @@ module HeaderAuthentication
 
     leave_calling_card = false
 
-    # Step 3.4
+    # Step 3.5
     if all_verified && user_info[:upn] != nil then
-      sesh[SESS_KEY_HA_AUTH_UPN] = user_info[:upn];
       ts = Time.now()
       Rails.logger.info("#{ts} *** HeaderAuthentication identified #{user_info[:upn]}.")
-      leave_calling_card = false || (@header_config[:return_auth_method_header] == true);
-
-      # 3.5.1 Determine if an account exists for the UPN and load it.
-      user_info[:account] = @load_user_method.call(user_info[:upn]);
-      # 3.5.2 Check if the application permits the user to be authenticated externally.
-      needs_header_auth = nil
-      if (user_info[:account] != nil) then 
-        needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
-      end
-      if user_info[:account] != nil && needs_header_auth == false then
-        # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
-        ts = Time.now()
-        Rails.logger.warn(
-          "#{ts} *** Valid external headers were provided for a non-external user #{user_info[:upn]}.\
-           Abandoning request and clearing auth session variables."
-        );
-        clear_session_vars(req, sesh);
-        res = Rack::Response.new("Valid external headers were provided for a non-external user #{user_info[:upn]}", 401, {})
-        return [res.status, res.headers, res.body]
-      else
-        # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
-        if user_info[:account] == nil then
-          user_info[:account] = @new_user_method.call(user_info);
-          user_info[:account].update_tracked_fields!(env) # Devise trackable
-        end
-
-        # step 3.6.2  Done with updated user_roles object.
-        @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
-        user_info[:account].save()
-        sesh[SESS_KEY_HA_AUTH_USER] = user_info[:account]
-      end
+      # leave_calling_card = false || (@header_config[:return_auth_method_header] == true);
+      return user_info
     else
       ts = Time.now()
       Rails.logger.info(
         "#{ts} HeaderAuthentication found no UPN from any valid headers.\
         Clearing auth session variables."
       )
-      clear_session_vars(req, sesh);
-    end
-
-    # continue request handler chain
-    status, headers, body = @app.call(env)
-
-    if leave_calling_card then
-      # for debugging, leave a calling card.
-      res = Rack::Response.new(body, status, headers)
-      res.add_header("X-Auth-HeaderAuthentication", "HeaderAuthentication #{@config_name}");
-      return [res.status, res.headers, res.body]
-    else
-      return [status, headers, body]
+      return nil
     end
   end
+
+  # load the account object of the user, or create from header if unknown.
+  def get_user_account(user_info)
+    # 3.5.1 Determine if an account exists for the UPN and load it.
+    user_info[:account] = @load_user_method.call(user_info[:upn]);
+    # 3.5.2 Check if the application permits the user to be authenticated externally.
+    needs_header_auth = nil
+    if (user_info[:account] != nil) then 
+      needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
+    end
+    if user_info[:account] != nil && needs_header_auth == false then
+      # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
+      ts = Time.now()
+      Rails.logger.warn(
+        "#{ts} *** Valid external headers were provided for a non-external user #{user_info[:upn]}.\
+          Abandoning request and clearing auth session variables."
+      );
+      clear_session_vars(req, sesh);
+      res = Rack::Response.new("Valid external headers were provided for a non-external user #{user_info[:upn]}", 401, {})
+      return [res.status, res.headers, res.body]
+    else
+      # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
+      if user_info[:account] == nil then
+        user_info[:account] = @new_user_method.call(user_info);
+        user_info[:account].update_tracked_fields!(env) # Devise trackable
+      end
+
+      # step 3.6.2  Done with updated user_roles object.
+      @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
+      user_info[:account].save()
+    end
+  end 
   
   # Verification step can be done on all headers before extracting any info from them.
   def verify_header(i, extraction_hash, header_value, req, sesh, user_info)
@@ -294,11 +275,49 @@ module HeaderAuthentication
     # TODO: imitate https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning#openssl
   end
 
-  # All custom extraction functions will be invokes with this signature.
+  # All custom extraction functions will be invoked with this signature.
   # This example does nothing but return the whole header value unmodified.
   def self.nop(i, extraction_hash, header_value, req, sesh, user_info)
     return header_value
   end
+
+  # ----
+  # Implementation of Devise interface (valid? and authenticate!)
+  # ----
+
+  def valid? 
+    # code here to check whether to try to authenticate using this strategy; 
+    req = request;
+    skip = no_auth_resource?(req);
+    if skip
+      Rails.logger.error("No authentication required for #{req.fullpath}")
+    end
+    answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
+             && !skip && !request.path.include?("sign_in")
+    Rails.logger.info("header_authentication. strategy valid? #{answer}.")
+    return answer
+  end 
+
+  def authenticate! 
+    # code here for doing authentication;
+    Rails.logger.debug("header_authentication.UPN?")
+    user_info = identify_user(request, session);
+    if user_info[:upn] != nil
+    then
+      sesh[SESS_KEY_HA_AUTH_UPN] = user_info[:upn];
+      refresh_account(user_info);
+      # account = session[SESS_KEY_HA_AUTH_USER]
+      account = user_info[:account]
+      ts = Time.now()
+      if account != nil then 
+        Rails.logger.info("#{ts} *** HeaderAuthentication replied to Warden with account for #{upn}.")
+        return success!(account)
+      end
+    end
+    clear_session_vars(request, session);
+    message = "Could not obtain User from session variable #{SESS_KEY_HA_AUTH_UPN}"
+    fail!(message) # where message is the failure message 
+  end 
 
   # This centralises the (short) work of supplying 
   #   the strategy implementation into Devise when it asks.
@@ -314,43 +333,8 @@ module HeaderAuthentication
     strategy_name = HeaderAuthentication::class_config_to_strategy(subclass, configname)
     Rails.logger.info("adding auth strategy #{strategy_name} ...")
 
-    @@all_config ||= Rails.application.config_for(:header_authentication)
-    header_config = @@all_config[:header_configs][configname.to_sym];
-    loader_name = header_config[:load_user_from_upn_function];
-    load_user_method = subclass.method(loader_name);
-    
     # Refer https://github.com/wardencommunity/warden/wiki/Strategies
-    Warden::Strategies.add(strategy_name) do 
-      @@load_user_method = load_user_method
-
-      def valid? 
-        # code here to check whether to try to authenticate using this strategy; 
-        answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
-                 && !request.path.include?("sign_in")
-        Rails.logger.info("header_authentication. strategy valid? #{answer}.")
-        return answer
-      end 
-    
-      def authenticate! 
-        # code here for doing authentication;
-        Rails.logger.debug("header_authentication.UPN?")
-        if session.has_key?(SESS_KEY_HA_AUTH_UPN) \
-          && session[SESS_KEY_HA_AUTH_UPN] != nil \
-          && session[SESS_KEY_HA_AUTH_USER] != nil \
-        then
-          upn = session[SESS_KEY_HA_AUTH_UPN]
-          # account = session[SESS_KEY_HA_AUTH_USER]
-          account = @@load_user_method.call(upn);
-          ts = Time.now()
-          if account != nil then 
-            Rails.logger.info("#{ts} *** HeaderAuthentication replied to Warden with account for #{upn}.")
-            return success!(account)
-          end
-        end
-        message = "Could not obtain User from session variable #{SESS_KEY_HA_AUTH_UPN}"
-        fail!(message) # where message is the failure message 
-      end 
-    end 
+    Warden::Strategies.add(strategy_name, subclass);
   }
   
 end
