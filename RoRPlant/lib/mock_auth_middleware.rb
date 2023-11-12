@@ -1,21 +1,14 @@
 # frozen_string_literal: true
 
-require_relative 'header_authentication'
+require_relative 'mock_header_authentication'
 
 class MockAuthMiddleware
-
-
+  include HeaderAuthentication
+  extend MockHeaderAuthentication # class methods
+  
   def initialize(app, configname)
-    super()
-    configure(app, configname);
-    @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
-  end
-
-  def initialize(app, configname)
-    # super(app, configname)
-    @impl_class = MockHeaderAuthentication
-    @impl = @impl_class.new().configure_mw(app, configname);
-    @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
+    configure_mw(app, configname);
+    MockAuthMiddleware.init_class_vars()
   end
 
   def call(env)
@@ -30,6 +23,29 @@ class MockAuthMiddleware
       # continue chain with no authentication requirement
       Rails.logger.error("No authentication required for #{req.fullpath}")
       # do nothing but allow rest of chain to run. No authentication.
+      return @app.call(env)
+    end
+
+    all_present = false
+    signout_detected = false
+    begin
+      all_present, signout_detected = validate_headers(req, sesh)
+    rescue StandardError => e
+      res = Rack::Response.new("Web server configuration problem #{e}", 500, {})
+      return [res.status, res.headers, res.body]
+    end
+
+    if !all_present then
+      Rails.logger.info("HeaderAuthentication found no auth headers.")
+      if signout_detected then
+        old_account_obj = sesh[SESS_KEY_HA_AUTH_USER];
+        # The :get_upn_from_user_function may be passed a Hash of the fields
+        # instead of the original ActiveRecord account object,
+        # due to web session state being serialised to storage.
+        old_upn = @extract_upn_method.call(old_account_obj)
+        Rails.logger.info("External signout detected from old session of #{old_upn}, clearing auth session variables.")
+        clear_session_vars(req, sesh);
+      end
       return @app.call(env)
     end
 
@@ -58,6 +74,7 @@ class MockAuthMiddleware
         clear_session_vars()
       end
     end
+  
     return @app.call(env)
   end
 
