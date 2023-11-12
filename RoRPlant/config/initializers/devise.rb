@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'devise/strategies/mock_header_authentication'
+require 'devise/strategies/mock_header_strategy'
 
 # Assuming you have not yet modified this file, each configuration option below
 # is set to its default value. Note that some are commented out while others
