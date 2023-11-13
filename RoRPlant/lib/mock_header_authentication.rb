@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+require 'digest'
+require 'base64'
+require 'json'
+require 'open-uri'
+
 require 'header_authentication'
 
 # Class methods to implement functions specific to the 
@@ -7,7 +12,6 @@ require 'header_authentication'
 module MockHeaderAuthentication
   
   def init_class_vars()
-    @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
   end
 
   def nop(i, extraction_hash, header_value, req, sesh, user_info)
@@ -38,20 +42,6 @@ module MockHeaderAuthentication
     user_info[:user_attributes].update(user_hash)
     return user_hash
   end
-
-  @@ext_to_native_role = ->(ext_name) {
-    # puts ext_name, @@role_mapping
-    if ext_name.include?('_') then
-      file_key = ext_name.upcase.to_sym
-    else 
-      file_key = ext_name.to_sym
-    end
-    if @@role_mapping.has_key?(file_key) then
-      return @@role_mapping[file_key][0]
-    else
-      return ext_name
-    end
-  }
 
   def query_directory_for_roles(extraction_hash, upn)
     user_portion = upn.split('@')[0]
@@ -94,44 +84,6 @@ module MockHeaderAuthentication
   def verify_match_to_template(i, extraction_hash, header_value, req, sesh, user_info)
     puts "verify_match_to_template"
     return header_value == user_info[:upn]
-  end
-
-  def user_from_upn(upn)
-    puts "user_from_upn"
-    return User.find_by(email: upn)
-  end
-
-  def upn_from_user(account)
-    puts "upn_from_user"
-    if account.is_a?(Hash) then
-      return account[:email]
-    elsif account.is_a?(User) then
-      return account.email
-    end
-
-    raise TypeError.new("Unexpected user account type #{account.class}")
-  end
-
-  def user_has_ext_authn(account)
-    return account.auth_type == 'EXTERNAL'
-  end
-
-  def set_user_roles(ext_role_array, account)
-    given_native_roles = ext_role_array.map(&@@ext_to_native_role)
-    puts "given_native_roles := #{given_native_roles}"
-    # In this basic user model they only had 1 role.
-    account.role_name = given_native_roles[0]
-  end
-
-  def new_user(user_info) 
-    init_pw = Digest::SHA1.hexdigest(Random.bytes(8));
-    account = User.new(
-      auth_type: "EXTERNAL", # authentication continues to be by headers
-      email: user_info[:user_attributes]['mail'], 
-      full_name: user_info[:user_attributes]['fullname'],
-      password: init_pw # Not used due to external auth, but cannot be NULL.
-    );
-    return account;
   end
   
 end

@@ -25,6 +25,22 @@ module PlantUserIntf
     return account.auth_type == 'EXTERNAL'
   end
 
+  @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
+
+  @@ext_to_native_role = ->(ext_name) {
+    # puts ext_name, @@role_mapping
+    if ext_name.include?('_') then
+      file_key = ext_name.upcase.to_sym
+    else 
+      file_key = ext_name.to_sym
+    end
+    if @@role_mapping.has_key?(file_key) then
+      return @@role_mapping[file_key][0]
+    else
+      return ext_name
+    end
+  }
+
   def set_app_user_roles(ext_role_array, account)
     given_native_roles = ext_role_array.map(&@@ext_to_native_role)
     puts "given_native_roles := #{given_native_roles}"
