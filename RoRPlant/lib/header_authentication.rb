@@ -270,10 +270,6 @@ module HeaderAuthentication
     # code here to check whether to try to authenticate using this strategy; 
     req = request(); # accessor via Warden common mixin.
     sesh = session();
-    skip = no_auth_resource?(req);
-    if skip
-      Rails.logger.error("No authentication required for #{req.fullpath}")
-    end
 
     # step 3.2
     all_present, signout_detected = validate_headers(req, sesh)
