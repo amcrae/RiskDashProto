@@ -155,8 +155,6 @@ module HeaderAuthentication
       end
     }
 
-    leave_calling_card = false
-
     # Step 3.5
     if all_verified && user_info[:upn] != nil then
       ts = Time.now()
