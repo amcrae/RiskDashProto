@@ -327,7 +327,7 @@ Devise.setup do |config|
 
   Warden::Manager.before_failure do |env, opts|
     # based on https://stackoverflow.com/questions/12873957/devise-log-after-auth-failure/33230548#33230548
-    # Change 'email' field reference to whatever the User Principle Name is for this app.
+    # Change 'email' field reference to whatever the User Principal Name is for this app.
     email = env["action_dispatch.request.request_parameters"][:user] &&
             env["action_dispatch.request.request_parameters"][:user][:email]
     ts = Time.now().to_s
