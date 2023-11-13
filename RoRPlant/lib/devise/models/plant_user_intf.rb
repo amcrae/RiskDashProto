@@ -25,8 +25,6 @@ module PlantUserIntf
     return account.auth_type == 'EXTERNAL'
   end
 
-  @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
-
   @@ext_to_native_role = ->(ext_name) {
     # puts ext_name, @@role_mapping
     if ext_name.include?('_') then
@@ -42,6 +40,8 @@ module PlantUserIntf
   }
 
   def set_app_user_roles(ext_role_array, account)
+    @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
+
     given_native_roles = ext_role_array.map(&@@ext_to_native_role)
     puts "given_native_roles := #{given_native_roles}"
     # In this basic user model they only had 1 role.
