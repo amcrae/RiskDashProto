@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
-require_relative 'mock_header_authentication'
+require 'mock_header_authentication'
+require 'devise/models/plant_user_intf'
 
 class MockAuthMiddleware
   include HeaderAuthentication
-  extend MockHeaderAuthentication # class methods
+  extend MockHeaderAuthentication
+  extend PlantUserIntf
   
   def initialize(app, configname)
     configure_mw(app, configname);
-    MockAuthMiddleware.init_class_vars()
   end
 
   def call(env)
