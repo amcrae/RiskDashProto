@@ -25,7 +25,7 @@ class MockAuthMiddleware
     all_present = false
     signout_detected = false
     begin
-      all_present, signout_detected = validate_headers(req, sesh)
+      all_present, signout_detected = find_required_headers(req, sesh)
     rescue StandardError => e
       res = Rack::Response.new("Web server configuration problem #{e}", 500, {})
       return [res.status, res.headers, res.body]

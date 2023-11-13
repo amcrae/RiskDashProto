@@ -41,6 +41,13 @@ require 'devise'
 # are expected to be done by implementing classes that mixin HeaderAuthentication.
 module HeaderAuthentication
   
+  module AuthSchemeIntf
+    # Return the list of HTTP headers required by this auth scheme.
+    def required_header_names()
+      raise NotImplementedError, "#{self} must implement the method #{__method__}"      
+    end
+  end
+
   SESS_KEY_HA_STRATEGY_VALID = '_HAUTH_STRATEGY_VALID';
 
   SESS_KEY_HA_AUTH_UPN = '_HAUTH_UPN';
@@ -61,12 +68,6 @@ module HeaderAuthentication
     @@all_config ||= Rails.application.config_for(:header_authentication)
     @config_name = configname
     @header_config = @@all_config[:header_configs][@config_name.to_sym];
-
-    # @load_user_method = self.class.method(@header_config[:load_user_from_upn_function]);
-    # @new_user_method = self.class.method(@header_config[:create_user_from_template_function]);
-    # @set_roles_method = self.class.method(@header_config[:set_user_roles_function]);
-    # @extract_upn_method = self.class.method(@header_config[:get_upn_from_user_function]);
-    # @user_needs_headerauth_method = self.class.method(@header_config[:user_needs_headerauth_function]);
   end
 
   def configure_mw(app, configname)
@@ -78,7 +79,7 @@ module HeaderAuthentication
     ("HTTP_" + real_name).upcase().sub('-', '_')
   end
 
-  def validate_headers(req, sesh)
+  def find_required_headers(req, sesh)
     extractions = @header_config[:header_extractions]
     if extractions.length == 0 then
       emsg = "No header extractions configured for HeaderAuthentication #{@config_name}"
@@ -89,12 +90,10 @@ module HeaderAuthentication
 
     # step 3.1
     all_present = true
-    for extraction_def in extractions
-      header_name = extraction_def[:http_header]
+    for header_name in self.class.required_header_names()
       header_cgi_name = cgize_name(header_name)
-      required = extraction_def[:required]; # YAML translated special string true to bool already.
       present = req.has_header?(header_cgi_name);
-      all_present = all_present && (present || !required)
+      all_present = all_present && present
     end
     
     # The session hash still has signed of previous ext authentication
@@ -275,7 +274,7 @@ module HeaderAuthentication
     sesh = session();
 
     # step 3.2
-    all_present, signout_detected = validate_headers(req, sesh)
+    all_present, signout_detected = find_required_headers(req, sesh)
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     
     answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \

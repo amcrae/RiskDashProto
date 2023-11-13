@@ -10,8 +10,13 @@ require 'header_authentication'
 # Class methods to implement functions specific to the 
 # homebrewed symmetric key signature scheme developed for testing.
 module MockHeaderAuthentication
-  
+  include HeaderAuthentication::AuthSchemeIntf
+
   def init_class_vars()
+  end
+
+  def required_header_names()
+    ['x-auth-accesstoken', 'x-auth-identity', 'x-auth-data']
   end
 
   def nop(i, extraction_hash, header_value, req, sesh, user_info)
