@@ -3,6 +3,9 @@
 require 'mock_header_authentication'
 require 'devise/models/plant_user_intf'
 
+# Subclass of Warden Strategy (via Devise) which provides custom functions
+# for verifying signatures of the homebrewed symmetric key signature 
+# scheme developed for testing.
 class MockAuthMiddleware
   include HeaderAuthentication
   extend MockHeaderAuthentication
@@ -35,7 +38,7 @@ class MockAuthMiddleware
         # The :get_upn_from_user_function may be passed a Hash of the fields
         # instead of the original ActiveRecord account object,
         # due to web session state being serialised to storage.
-        old_upn = @extract_upn_method.call(old_account_obj)
+        old_upn = self.class.get_upn_from_app_user(old_account_obj)
         Rails.logger.info("External signout detected from old session of #{old_upn}, clearing auth session variables.")
         clear_session_vars(req, sesh);
       end
@@ -47,12 +50,12 @@ class MockAuthMiddleware
     # has changed.
     user_changed = false
     user_info = identify_user(req, sesh);
-    if user_info != nil && user_info[:upn] != nil
+    if user_info != nil && user_info[:upn] != nil then
       req_upn = user_info[:upn].downcase();
       if sesh[SESS_KEY_HA_AUTH_UPN] != nil then
         session_upn = sesh[SESS_KEY_HA_AUTH_UPN].downcase()
-        current_session_user = @load_user_method.call(session_upn)
-        ext_auth = @user_needs_headerauth_method.call(current_session_user)
+        current_session_user = self.class.load_app_user_by_upn(session_upn);
+        ext_auth = self.class.app_user_needs_headerauth?(current_session_user)
         if ext_auth then 
           if req_upn == nil 
             user_changed = true
