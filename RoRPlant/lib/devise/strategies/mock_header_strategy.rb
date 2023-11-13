@@ -3,9 +3,9 @@
 require 'mock_header_authentication'
 require 'devise/models/plant_user_intf'
 
-# Subclass of Warden Strategy (via Devise) which provides custom functions
-# for verifying signatures of the homebrewed symmetric key signature 
-# scheme developed for testing.
+# Subclass of Warden Strategy (via Devise) which provides 
+# HTTP header-based authentication of the mock signature
+# scheme via the extended modules.
 class MockHeaderStrategy < Devise::Strategies::Base
   include HeaderAuthentication
   extend MockHeaderAuthentication

@@ -8,7 +8,7 @@ require 'open-uri'
 require 'header_authentication'
 
 # Class methods to implement functions specific to the 
-# homebrewed mock header authentication scheme.
+# homebrewed symmetric key signature scheme developed for testing.
 module MockHeaderAuthentication
   
   def init_class_vars()
