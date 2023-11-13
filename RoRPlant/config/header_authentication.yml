@@ -1,11 +1,6 @@
 development:
   header_configs:
     Mock:
-      load_user_from_upn_function: user_from_upn
-      get_upn_from_user_function: upn_from_user
-      user_needs_headerauth_function: user_has_ext_authn
-      create_user_from_template_function: new_user
-      set_user_roles_function: set_user_roles
       header_extractions:
         - 
           http_header: x-auth-accesstoken
@@ -35,11 +30,6 @@ development:
 test:
   header_configs:
     Mock:
-      load_user_from_upn_function: user_from_upn
-      get_upn_from_user_function: upn_from_user
-      user_needs_headerauth_function: user_has_ext_authn
-      create_user_from_template_function: new_user
-      set_user_roles_function: set_user_roles
       header_extractions:
         - 
           http_header: x-auth-accesstoken
