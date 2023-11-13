@@ -177,7 +177,7 @@ module HeaderAuthentication
   def get_user_account(user_info)
     # 3.5.1 Determine if an account exists for the UPN and load it.
     user_info[:account] = @load_user_method.call(user_info[:upn]);
-    # 3.5.2 Check if the application permits the user to be authenticated externally.
+        # 3.5.2 Check if the application permits the user to be authenticated externally.
     needs_header_auth = nil
     if (user_info[:account] != nil) then 
       needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
@@ -276,7 +276,7 @@ module HeaderAuthentication
     sesh[SESS_KEY_HA_STRATEGY_VALID] = all_present
     
     answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
-            && !skip && !request.path.include?("sign_in")
+            && !request.path.include?("sign_in")
     Rails.logger.info("header_authentication. strategy valid? #{answer}.")
     return answer
   end 
