@@ -78,16 +78,6 @@ module HeaderAuthentication
     ("HTTP_" + real_name).upcase().sub('-', '_')
   end
 
-  # If the requested path has an intentionally non-secured prefix, this returns true.
-  def no_auth_resource?(req) 
-    for pathroot in @header_config[:ignore_resource_paths]
-      if req.fullpath.downcase.start_with?(pathroot.downcase) then
-        return true
-      end
-    end
-    return false
-  end
-
   def validate_headers(req, sesh)
     extractions = @header_config[:header_extractions]
     if extractions.length == 0 then

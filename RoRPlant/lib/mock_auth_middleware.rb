@@ -18,14 +18,6 @@ class MockAuthMiddleware
     # sesh = req.session
     sesh = env['rack.session']
 
-    skip_resource = no_auth_resource?(req)
-    if skip_resource then
-      # continue chain with no authentication requirement
-      Rails.logger.error("No authentication required for #{req.fullpath}")
-      # do nothing but allow rest of chain to run. No authentication.
-      return @app.call(env)
-    end
-
     all_present = false
     signout_detected = false
     begin

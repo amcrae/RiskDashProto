@@ -1,7 +1,6 @@
 development:
   header_configs:
     Mock:
-      ignore_resource_paths: ["/assets", "/3rdparty"]
       load_user_from_upn_function: user_from_upn
       get_upn_from_user_function: upn_from_user
       user_needs_headerauth_function: user_has_ext_authn
@@ -36,7 +35,6 @@ development:
 test:
   header_configs:
     Mock:
-      ignore_resource_paths: ["/assets", "/3rdparty"]
       load_user_from_upn_function: user_from_upn
       get_upn_from_user_function: upn_from_user
       user_needs_headerauth_function: user_has_ext_authn
