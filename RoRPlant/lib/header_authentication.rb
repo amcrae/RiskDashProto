@@ -62,11 +62,11 @@ module HeaderAuthentication
     @config_name = configname
     @header_config = @@all_config[:header_configs][@config_name.to_sym];
 
-    @load_user_method = self.class.method(@header_config[:load_user_from_upn_function]);
-    @new_user_method = self.class.method(@header_config[:create_user_from_template_function]);
-    @set_roles_method = self.class.method(@header_config[:set_user_roles_function]);
-    @extract_upn_method = self.class.method(@header_config[:get_upn_from_user_function]);
-    @user_needs_headerauth_method = self.class.method(@header_config[:user_needs_headerauth_function]);
+    # @load_user_method = self.class.method(@header_config[:load_user_from_upn_function]);
+    # @new_user_method = self.class.method(@header_config[:create_user_from_template_function]);
+    # @set_roles_method = self.class.method(@header_config[:set_user_roles_function]);
+    # @extract_upn_method = self.class.method(@header_config[:get_upn_from_user_function]);
+    # @user_needs_headerauth_method = self.class.method(@header_config[:user_needs_headerauth_function]);
   end
 
   def configure_mw(app, configname)
@@ -176,11 +176,14 @@ module HeaderAuthentication
   # load the account object of the user, or create from header if unknown.
   def get_user_account(user_info)
     # 3.5.1 Determine if an account exists for the UPN and load it.
-    user_info[:account] = @load_user_method.call(user_info[:upn]);
-        # 3.5.2 Check if the application permits the user to be authenticated externally.
+    # user_info[:account] = @load_user_method.call(user_info[:upn]);
+    user_info[:account] = self.class.load_app_user_by_upn(user_info[:upn]);
+    
+    # 3.5.2 Check if the application permits the user to be authenticated externally.
     needs_header_auth = nil
     if (user_info[:account] != nil) then 
-      needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
+      # needs_header_auth = @user_needs_headerauth_method.call(user_info[:account]); 
+      needs_header_auth = self.class.app_user_needs_headerauth?(user_info[:account])
     end
     if user_info[:account] != nil && needs_header_auth == false then
       # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
@@ -193,12 +196,14 @@ module HeaderAuthentication
     else
       # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
       if user_info[:account] == nil then
-        user_info[:account] = @new_user_method.call(user_info);
+        # user_info[:account] = @new_user_method.call(user_info);
+        user_info[:account] = self.class.create_app_user_from_template(user_info);
         user_info[:account].update_tracked_fields!(env) # Devise trackable
       end
 
       # step 3.6.2  Done with updated user_roles object.
-      @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
+      # @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
+      self.class.set_app_user_roles(user_info[:ext_roles_array], user_info[:account])
       user_info[:account].save()
       return user_info[:account]
     end
