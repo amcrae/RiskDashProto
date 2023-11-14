@@ -114,14 +114,6 @@ module HeaderAuthentication
   end
 
   def find_required_headers(req, sesh)
-    extractions = @header_config[:header_extractions]
-    if extractions.length == 0 then
-      emsg = "No header extractions configured for HeaderAuthentication #{@config_name}"
-      Rails.logger.error(emsg)
-      clear_session_vars(req, sesh);
-      raise StandardError.new(emsg)
-    end
-
     # step 3.1
     all_present = true
     for header_name in self.class.required_header_names()
