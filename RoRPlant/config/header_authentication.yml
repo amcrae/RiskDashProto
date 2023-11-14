@@ -26,6 +26,10 @@ development:
       signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, warden.user.user.key] # , session_id
       signout_clears_session: false
       return_auth_method_header: true
+      signing_key_args:
+        access_key: "www.azure/PKCS/%kid%/key.gpg"
+        userinfo_key: "www.aws/PKCS/%kid%/key.gpg"
+      directory_formula: "http://127.0.0.1:3000/staticdata/$USER_memberOf.json"
 
 test:
   header_configs:
@@ -55,3 +59,7 @@ test:
       signout_erases_session_vars: [SESS_KEY_HA_AUTH_USER, SESS_KEY_HA_AUTH_UPN, warden.user.user.key] # , session_id
       signout_clears_session: false
       return_auth_method_header: true
+      signing_key_args:
+        access_key: "www.azure/PKCS/%kid%/key.gpg"
+        userinfo_key: "www.aws/PKCS/%kid%/key.gpg"
+      directory_formula: "file:./public/staticdata/$USER_memberOf.json"
