@@ -23,7 +23,7 @@ module MockHeaderAuthentication
     return 'SECRET'
   end
 
-  def get_signature_verification_key(header_name, header_value, signing_key_config)
+  def get_signature_verification_key(header_name, header_value, config)
     if header_name == 'x-auth-identity' then
       return nil;
     end
@@ -44,7 +44,7 @@ module MockHeaderAuthentication
     return sig_rcvd.downcase() == sig_recon
   end
 
-  def verify_signed_value(header_name, header_value, signing_key, signing_key_config)
+  def verify_signed_value(header_name, header_value, signing_key, config)
     ok = mock_sig_validation(header_value, signing_key)
     # puts "#{header_name} was #{if ok then 'OK' else 'BAD' end}."
     return ok;

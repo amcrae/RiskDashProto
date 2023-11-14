@@ -49,10 +49,10 @@ module HeaderAuthentication
 
     # Return an object used as the key for verifying the signature embedde in a header value.
     #  header_value == the content of the HTTP header (includes the signature wrapper).
-    #  signing_key_config == the hash from the configuration :signing_key_args property.
+    #  config == the current configuration hash.
     # Must return nil if signatures are not required (and not expected) on the given header.
     # Expected to raise an exception if the key cannot be retrieved.
-    def get_signature_verification_key(header_name, header_value, signing_key_config)
+    def get_signature_verification_key(header_name, header_value, config)
       raise NotImplementedError, "#{self} must implement the method #{__method__}";
     end
 
@@ -60,8 +60,8 @@ module HeaderAuthentication
     # Raising an exception will also result in signature being untrusted.
     #  header_value == The complete header value.
     #  signing_key == the object obtained from get_signature_verification_key
-    #  signing_key_config == the hash from the configuration :signing_key_args property.
-    def verify_signed_value(header_name, header_value, signing_key, signing_key_config)
+    #  config == the current configuration hash.
+    def verify_signed_value(header_name, header_value, signing_key, config)
       raise NotImplementedError, "#{self} must implement the method #{__method__}";
     end
 
@@ -249,14 +249,14 @@ module HeaderAuthentication
 
     token = req.get_header(header_cgi_name);
 
-    signing_key = self.class.get_signature_verification_key(header_name, header_value, config[:signing_key_args])
+    signing_key = self.class.get_signature_verification_key(header_name, header_value, config)
     if signing_key == nil then
       # If no exception was raised it is because no signature is needed for this header.
       return nil # neither passed nor failed sig verification.
     end
 
     return self.class.verify_signed_value(
-      header_name, token, signing_key, config[:signing_key_args]
+      header_name, token, signing_key, config
     );
   end
 
