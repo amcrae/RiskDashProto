@@ -46,6 +46,40 @@ module HeaderAuthentication
     def required_header_names()
       raise NotImplementedError, "#{self} must implement the method #{__method__}"      
     end
+
+    # Return an object used as the key for verifying the signature embedde in a header value.
+    #  header_value == the content of the HTTP header (includes the signature wrapper).
+    #  signing_key_config == the hash from the configuration :signing_key_args property.
+    # Must return nil if signatures are not required (and not expected) on the given header.
+    # Expected to raise an exception if the key cannot be retrieved.
+    def get_signature_verification_key(header_name, header_value, signing_key_config)
+      raise NotImplementedError, "#{self} must implement the method #{__method__}";
+    end
+
+    # Return true when the signed value passes signature verification, false if it does not.
+    # Raising an exception will also result in signature being untrusted.
+    #  header_value == The complete header value.
+    #  signing_key == the object obtained from get_signature_verification_key
+    #  signing_key_config == the hash from the configuration :signing_key_args property.
+    def verify_signed_value(header_name, header_value, signing_key, signing_key_config)
+      raise NotImplementedError, "#{self} must implement the method #{__method__}";
+    end
+
+    # Update the given user_info data structure with attributes of the
+    # authenticated user given by the external Identity Provider.
+    # Updates can be made to user attributes or roles list depending on the header given.
+    # Return any additions made as a hash, such that if no changes are made a 0 sized hash is returned.
+    # config == the current header auth configuration
+    def get_user_details(header_name, config, header_value, req, sesh, user_info)
+      raise NotImplementedError, "#{self} must implement the method #{__method__}";
+    end
+
+    # Test whether a header value is valid with respect to all data gathered from all headers.
+    # If no test is to be done on a header, return nil.
+    # Otherwise return true or false depending on header value validity.
+    def user_details_validator(header_name, header_value, user_info)
+      raise NotImplementedError, "#{self} must implement the method #{__method__}";
+    end
   end
 
   SESS_KEY_HA_STRATEGY_VALID = '_HAUTH_STRATEGY_VALID';
@@ -121,18 +155,16 @@ module HeaderAuthentication
       ext_roles_array: []
     }
 
-    extractions = @header_config[:header_extractions]
-
     # step 3.3
     all_verified = true
-    extractions.each_with_index { |extraction_hash, i|
-      header_name = extraction_hash[:http_header]
+    user_data_found = {}
+    for header_name in self.class.required_header_names()
       # puts "HeaderAuth step #{i} #{header_name}"
       header_cgi_name = cgize_name(header_name)
-      present = req.has_header?(header_cgi_name);
+      # present = req.has_header?(header_cgi_name); already checked
       header_value = req.get_header(header_cgi_name);
 
-      verified = verify_header(i, extraction_hash, header_value, req, sesh, user_info)
+      verified = verify_header(header_name, @header_config, header_value, req, sesh, user_info)
       # Only extraction operations which specify a verifier should affect whether all headers were verified.
       if verified != nil then
         all_verified = all_verified && verified;
@@ -140,19 +172,28 @@ module HeaderAuthentication
       if verified != false then
         # extraction functions are only called on verified headers.
         # step 3.6.1 will actually be done early, assumed to update user_roles object.
-        res = extract_auth_info(i, extraction_hash, header_value, req, sesh, user_info)
-        if @header_config[:user_upn_extraction_step].to_i == i then
-          # puts "HeaderAuth found upn"
-          # step 3.4
-          user_info[:upn] = res
-        end
-        if @header_config.has_key?(:validator_function_name) then
-          validator = self.class.method(@header_config[:validator_function_name])
-          passes = validator.call(i, extraction_hash, header_value, req, sesh, user_info)
-          all_verified &= passes
-        end  
+        found_user_data = self.class.get_user_details(
+          header_name, @header_config, header_value, req, sesh, user_info
+        )
+        puts "#{header_name} found #{found_user_data}"
+        user_data_found.update(found_user_data)
       end
-    }
+    end
+
+    for header_name in self.class.required_header_names()
+      header_cgi_name = cgize_name(header_name)
+      # present = req.has_header?(header_cgi_name); already checked
+      header_value = req.get_header(header_cgi_name);
+      validation = self.class.user_details_validator(
+        header_name, header_value, user_info
+      );
+      puts "#{header_name} validation #{validation}."
+      if validation != nil then
+        all_verified = all_verified && validation
+      end
+    end
+
+    puts "user_info == #{user_info}"
 
     # Step 3.5
     if all_verified && user_info[:upn] != nil then
@@ -207,39 +248,24 @@ module HeaderAuthentication
   end 
   
   # Verification step can be done on all headers before extracting any info from them.
-  def verify_header(i, extraction_hash, header_value, req, sesh, user_info)
-    header_name = extraction_hash[:http_header]
+  def verify_header(header_name, config, header_value, req, sesh, user_info)
     header_cgi_name = cgize_name(header_name);
     present = req.has_header?(header_cgi_name);
-    must_verify = extraction_hash.has_key?(:sig_verifier)
-    if !present || !must_verify then
-      return nil
+    if !present then
+      raise ArgumentError, "Tried to verify a header '#{header_name}' that is not present in request.";
     end
 
     token = req.get_header(header_cgi_name);
 
-    signing_key = nil
-    if extraction_hash.has_key?(:get_signing_key) 
-      get_key_fun = self.class.method(extraction_hash[:get_signing_key])
-      signing_key = get_key_fun.call(extraction_hash[:signing_key_args])
+    signing_key = self.class.get_signature_verification_key(header_name, header_value, config[:signing_key_args])
+    if signing_key == nil then
+      # If no exception was raised it is because no signature is needed for this header.
+      return nil # neither passed nor failed sig verification.
     end
-    
-    # Allow for multiple extractions on same header token without re-verifying same data.
-    verified = nil
-    if extraction_hash.has_key?(:sig_verifier) then
-      verifier = self.class.method(extraction_hash[:sig_verifier]);
-      if signing_key != nil and verifier != nil then
-        verified = verifier.call(token, signing_key);
-      end
-    end
-    return verified
-  end
 
-  def extract_auth_info(i, extraction_hash, header_value, req, sesh, user_info)
-    if extraction_hash.has_key?(:extraction_function_name) then
-      extractor = self.class.method(extraction_hash[:extraction_function_name]);
-      return extractor.call(i, extraction_hash, header_value, req, sesh, user_info);
-    end
+    return self.class.verify_signed_value(
+      header_name, token, signing_key, config[:signing_key_args]
+    );
   end
 
   def clear_session_vars(req, sesh)
@@ -256,12 +282,6 @@ module HeaderAuthentication
 
   def pk_passes_pinning?(epxected_host, expected_pk, request_ssl_info)
     # TODO: imitate https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning#openssl
-  end
-
-  # All custom extraction functions will be invoked with this signature.
-  # This example does nothing but return the whole header value unmodified.
-  def self.nop(i, extraction_hash, header_value, req, sesh, user_info)
-    return header_value
   end
 
   # ----
@@ -289,12 +309,12 @@ module HeaderAuthentication
     sesh = session()
     req = request()
     user_info = identify_user(req, sesh);
-    if user_info[:upn] != nil
+    puts "identify_user returned #{user_info}"
+    if user_info && user_info[:upn] != nil
     then
       sesh[SESS_KEY_HA_AUTH_UPN] = user_info[:upn];
-      get_user_account(user_info);
+      account = get_user_account(user_info);
       # account = session[SESS_KEY_HA_AUTH_USER]
-      account = user_info[:account]
       sesh[SESS_KEY_HA_AUTH_USER] = account
       ts = Time.now()
       if account != nil then 
