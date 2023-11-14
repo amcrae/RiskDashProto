@@ -19,8 +19,20 @@ module MockHeaderAuthentication
     ['x-auth-accesstoken', 'x-auth-identity', 'x-auth-data']
   end
 
-  def mock_key(*args)
-    return 'SECRET'
+  def pinned_verification_key(issuer_domain)
+    pins = {
+      'heyjust.trustus.com' => 'SECRET'
+    }
+    for k, v in pins.entries()
+      if issuer_domain.start_with?(k)
+        return v
+      end
+    end
+    raise SecurityError, "No pinned cert matched the signature issuer."
+  end
+
+  def mock_key()
+    'SECRET'
   end
 
   def get_signature_verification_key(header_name, header_value, config)
@@ -41,11 +53,18 @@ module MockHeaderAuthentication
     data, sig_rcvd = decode_homebrew(header_value) 
     prefixed = signing_key + '|' + data
     sig_recon = Digest::SHA1.hexdigest(prefixed).downcase();
-    return sig_rcvd.downcase() == sig_recon
+    return (sig_rcvd.downcase() == sig_recon)
+  end
+
+  def pubkey_passes_pinning?(issuer_domain, received_pubkey)
+    # TODO: imitate https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning#openssl
+    return pinned_verification_key(issuer_domain) == received_pubkey
   end
 
   def verify_signed_value(header_name, header_value, signing_key, config)
-    ok = mock_sig_validation(header_value, signing_key)
+    ok = mock_sig_validation(header_value, signing_key);
+    domain = URI.parse(config[:jwks_url]).host
+    ok = ok && pubkey_passes_pinning?(domain, signing_key);
     # puts "#{header_name} was #{if ok then 'OK' else 'BAD' end}."
     return ok;
   end

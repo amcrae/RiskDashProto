@@ -19,3 +19,4 @@ test:
         access_key: "www.azure/PKCS/%kid%/key.gpg"
         userinfo_key: "www.aws/PKCS/%kid%/key.gpg"
       directory_formula: "file:./public/staticdata/$USER_memberOf.json"
+      jwks_url: "https://heyjust.trustus.com/pkcs/$userid/pubkey.pem"

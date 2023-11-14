@@ -272,10 +272,6 @@ module HeaderAuthentication
     end
   end
 
-  def pk_passes_pinning?(epxected_host, expected_pk, request_ssl_info)
-    # TODO: imitate https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning#openssl
-  end
-
   # ----
   # Implementation of Devise interface (valid? and authenticate!)
   # ----
