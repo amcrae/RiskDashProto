@@ -167,7 +167,7 @@ module HeaderAuthentication
         found_user_data = self.class.get_user_details(
           header_name, @header_config, header_value, req, sesh, user_info
         )
-        puts "#{header_name} found #{found_user_data}"
+        # puts "#{header_name} found #{found_user_data}"
         user_data_found.update(found_user_data)
       end
     end
@@ -179,13 +179,13 @@ module HeaderAuthentication
       validation = self.class.user_details_validator(
         header_name, header_value, user_info
       );
-      puts "#{header_name} validation #{validation}."
+      # puts "#{header_name} validation #{validation}."
       if validation != nil then
         all_verified = all_verified && validation
       end
     end
 
-    puts "user_info == #{user_info}"
+    # puts "user_info == #{user_info}"
 
     # Step 3.5
     if all_verified && user_info[:upn] != nil then
@@ -297,7 +297,7 @@ module HeaderAuthentication
     sesh = session()
     req = request()
     user_info = identify_user(req, sesh);
-    puts "identify_user returned #{user_info}"
+    # puts "identify_user returned #{user_info}"
     if user_info && user_info[:upn] != nil
     then
       sesh[SESS_KEY_HA_AUTH_UPN] = user_info[:upn];
