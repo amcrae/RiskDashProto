@@ -6,12 +6,12 @@ module PlantUserIntf
   include HeaderAuthentication::AppUserIntf
   
   def load_app_user_by_upn(upn)
-    puts "user_from_upn"
+    # puts "user_from_upn"
     return User.find_by(email: upn)
   end
 
   def get_upn_from_app_user(account)
-    puts "upn_from_user"
+    # puts "upn_from_user"
     if account.is_a?(Hash) then
       return account[:email]
     elsif account.is_a?(User) then
