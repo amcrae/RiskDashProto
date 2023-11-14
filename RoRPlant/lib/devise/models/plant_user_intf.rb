@@ -41,9 +41,8 @@ module PlantUserIntf
 
   def set_app_user_roles(ext_role_array, account)
     @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
-
     given_native_roles = ext_role_array.map(&@@ext_to_native_role)
-    puts "given_native_roles := #{given_native_roles}"
+    # puts "given_native_roles := #{given_native_roles}"
     # In this basic user model they only had 1 role.
     account.role_name = given_native_roles[0]
   end
