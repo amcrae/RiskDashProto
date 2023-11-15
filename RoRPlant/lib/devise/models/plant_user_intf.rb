@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'app_user_intf'
+require_relative '../../app_user_intf'
 
 module PlantUserIntf
   include HeaderAuthentication::AppUserIntf

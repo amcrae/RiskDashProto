@@ -2,9 +2,11 @@ require_relative "boot"
 
 require "rails/all"
 
-# require_relative '../lib/custom_header'
+# The suggestion of adding /lib into eager_load_paths
+# will not take effect until after config block is over,
+# however classes from /lib must be resolved during this block.
+# A require() would fail but a require_relative() worked.
 require_relative '../lib/mock_proxy'
-
 require_relative '../lib/mock_auth_middleware'
 
 # Require the gems listed in Gemfile, including any gems
@@ -26,6 +28,7 @@ module RoRPlant
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    # config.eager_load_paths << Rails.root.join('lib')
 
     # config.session_store :cache_store
 

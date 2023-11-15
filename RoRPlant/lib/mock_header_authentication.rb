@@ -5,7 +5,7 @@ require 'base64'
 require 'json'
 require 'open-uri'
 
-require 'header_authentication'
+require_relative 'header_authentication'
 
 # Class methods to implement functions specific to the 
 # homebrewed symmetric key signature scheme developed for testing.
