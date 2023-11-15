@@ -98,7 +98,7 @@ module HeaderAuthentication
     "#{subclass.to_s + "_" + config_name}".to_sym
   end
 
-  def configure_functions(configname)
+  def configure(configname)
     @@all_config ||= Rails.application.config_for(:header_authentication)
     @config_name = configname
     @header_config = @@all_config[:header_configs][@config_name.to_sym];
@@ -106,7 +106,7 @@ module HeaderAuthentication
 
   def configure_mw(app, configname)
     @app = app
-    configure_functions(configname)
+    configure(configname)
   end
 
   def cgize_name(real_name) 

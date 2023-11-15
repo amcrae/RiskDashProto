@@ -16,7 +16,7 @@ class MockHeaderStrategy < Devise::Strategies::Base
   # a particular constructor sig is expected by Warden
   def initialize(*args)
     super(*args)
-    configure_functions("Mock")
+    configure("Mock")
   end
 
   # To be called from Rails application-level config to install the custom auth functions.
