@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'mock_header_authentication'
-require 'devise/models/plant_user_intf'
+require_relative '../../mock_header_authentication'
 
 # Subclass of Warden Strategy (via Devise) which provides 
 # HTTP header-based authentication of the mock signature
