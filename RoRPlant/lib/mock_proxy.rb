@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'custom_header'
+
 # A Rack middleware class which mocks presence of a proxy.
 # It does this by
 #    1. being told (e.g. by a rails controller) which JWTs to inject into which HTTP headers.

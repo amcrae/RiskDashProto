@@ -1,13 +1,6 @@
 shared:
-  app_role_permissions:  # not used yet
-    TECHNICIAN:
-      - asset.create
-      - asset.read
-      - asset.update
-      - asset.delete
-      - asset.repair
-    TERRORIST:
-      - asset.sabotage
+  app_role_permissions:
+    NOT_USED: "Effectively replaced by calls to CanCanCan."
 
 production:
   provider_to_app:

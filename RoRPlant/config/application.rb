@@ -2,10 +2,12 @@ require_relative "boot"
 
 require "rails/all"
 
-require_relative '../lib/custom_header'
+# The suggestion of adding /lib into eager_load_paths
+# will not take effect until after config block is over,
+# however classes from /lib must be resolved during this block.
+# A require() would fail but a require_relative() worked.
 require_relative '../lib/mock_proxy'
-require_relative '../lib/header_authentication'
-require_relative '../lib/mock_header_authentication'
+require_relative '../lib/mock_auth_middleware'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -26,6 +28,7 @@ module RoRPlant
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    # config.eager_load_paths << Rails.root.join('lib')
 
     # config.session_store :cache_store
 
@@ -37,10 +40,8 @@ module RoRPlant
 
     config.middleware.insert_after Rack::Head, MockProxy
 
-    # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
-    # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
     if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then
-      config.middleware.insert_before Warden::Manager, MockHeaderAuthentication, "Mock"
+      config.middleware.insert_before Warden::Manager, MockAuthMiddleware, "Mock"
     end
 
     config.active_job.queue_adapter = :delayed_job

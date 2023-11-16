@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'devise/strategies/mock_header_strategy'
+
 # Assuming you have not yet modified this file, each configuration option below
 # is set to its default value. Note that some are commented out while others
 # are not: uncommented lines are intended to protect your configuration from
@@ -313,10 +315,10 @@ Devise.setup do |config|
 
   # add header authentication method as last method
   config.warden do |manager| 
-    MockHeaderAuthentication::add_to_warden("Mock");
+    MockHeaderStrategy::add_to_warden("Mock");
     user_auth_strategies = manager.default_strategies(scope: :user);
     user_auth_strategies.append(
-      HeaderAuthentication::class_config_to_strategy(MockHeaderAuthentication, "Mock")
+      HeaderAuthentication::class_config_to_strategy(MockHeaderStrategy, "Mock")
     );
     # dbi = user_auth_strategies.index(:database_authenticatable)
     # user_auth_strategies.insert(dbi, :selective_database_authenticatable)
@@ -325,7 +327,7 @@ Devise.setup do |config|
 
   Warden::Manager.before_failure do |env, opts|
     # based on https://stackoverflow.com/questions/12873957/devise-log-after-auth-failure/33230548#33230548
-    # Change 'email' field reference to whatever the User Principle Name is for this app.
+    # Change 'email' field reference to whatever the User Principal Name is for this app.
     email = env["action_dispatch.request.request_parameters"][:user] &&
             env["action_dispatch.request.request_parameters"][:user][:email]
     ts = Time.now().to_s
