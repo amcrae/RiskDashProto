@@ -2,6 +2,8 @@
 
 require 'devise'
 
+require_relative 'auth_scheme_intf'
+
 # Functions as an adaptor between ID & Role tokens supplied in HTTP Headers
 #  and the Devise framework for authentication in Rails.
 # In the below description the steps which require custom code have '+C'.
@@ -40,47 +42,7 @@ require 'devise'
 # The application-specific methods of verifying headers and loading User accounts
 # are expected to be done by implementing classes that mixin HeaderAuthentication.
 module HeaderAuthentication
-  
-  module AuthSchemeIntf
-    # Return the list of HTTP headers required by this auth scheme.
-    def required_header_names()
-      raise NotImplementedError, "#{self} must implement the method #{__method__}"      
-    end
-
-    # Return an object used as the key for verifying the signature embedde in a header value.
-    #  header_value == the content of the HTTP header (includes the signature wrapper).
-    #  config == the current configuration hash.
-    # Must return nil if signatures are not required (and not expected) on the given header.
-    # Expected to raise an exception if the key cannot be retrieved.
-    def get_signature_verification_key(header_name, header_value, config)
-      raise NotImplementedError, "#{self} must implement the method #{__method__}";
-    end
-
-    # Return true when the signed value passes signature verification, false if it does not.
-    # Raising an exception will also result in signature being untrusted.
-    #  header_value == The complete header value.
-    #  signing_key == the object obtained from get_signature_verification_key
-    #  config == the current configuration hash.
-    def verify_signed_value(header_name, header_value, signing_key, config)
-      raise NotImplementedError, "#{self} must implement the method #{__method__}";
-    end
-
-    # Update the given user_info data structure with attributes of the
-    # authenticated user given by the external Identity Provider.
-    # Updates can be made to user attributes or roles list depending on the header given.
-    # Return any additions made as a hash, such that if no changes are made a 0 sized hash is returned.
-    # config == the current header auth configuration
-    def get_user_details(header_name, config, header_value, req, sesh, user_info)
-      raise NotImplementedError, "#{self} must implement the method #{__method__}";
-    end
-
-    # Test whether a header value is valid with respect to all data gathered from all headers.
-    # If no test is to be done on a header, return nil.
-    # Otherwise return true or false depending on header value validity.
-    def user_details_validator(header_name, header_value, user_info)
-      raise NotImplementedError, "#{self} must implement the method #{__method__}";
-    end
-  end
+  include AuthSchemeIntf
 
   SESS_KEY_HA_STRATEGY_VALID = '_HAUTH_STRATEGY_VALID';
 
