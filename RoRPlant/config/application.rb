@@ -40,8 +40,6 @@ module RoRPlant
 
     config.middleware.insert_after Rack::Head, MockProxy
 
-    # config.middleware.insert_after MockProxy, CustomHeader, "extra arg1", "arg2"
-    # config.middleware.insert_after Rack::Head, CustomHeader, "unique args", "foo"
     if [:PROXY_ONLY, :PROXY_OR_APP].include?(Rails.configuration.custom_authentication) then
       config.middleware.insert_before Warden::Manager, MockAuthMiddleware, "Mock"
     end
