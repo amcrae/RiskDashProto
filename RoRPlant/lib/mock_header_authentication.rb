@@ -33,7 +33,12 @@ module MockHeaderAuthentication
   end
 
   def mock_key()
+    Rails.logger.debug("Retrieval of real verification key would happen here.");
     'SECRET'
+  end
+
+  def issuer_domain(config)
+    return URI.parse(config[:jwks_url]).host
   end
 
   def get_signature_verification_key(header_name, header_value, config)
@@ -41,7 +46,14 @@ module MockHeaderAuthentication
       return nil;
     end
 
-    return mock_key()
+    issuer = issuer_domain(config)
+    verification_key_key = { :issuer => issuer, :format => :PEM }.freeze()
+    answer = Rails.cache.read(verification_key_key) 
+    if answer == nil then
+      answer = mock_key()
+      Rails.cache.write(verification_key_key, answer)
+    end
+    return answer
   end
 
   def decode_homebrew(header_value)

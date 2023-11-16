@@ -31,6 +31,7 @@ module RoRPlant
     # config.eager_load_paths << Rails.root.join('lib')
 
     # config.session_store :cache_store
+    config.cache_store = :file_store
 
     # custom application setting to keep middleware and GUI consistent.
     # allowed values are :PROXY_ONLY, :PROXY_OR_APP, :APP_ONLY
