@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative './custom_header'
+require_relative 'custom_header'
 
 # A Rack middleware class which mocks presence of a proxy.
 # It does this by
