@@ -6,9 +6,8 @@ require "rails/all"
 # will not take effect until after config block is over,
 # however classes from /lib must be resolved during this block.
 # A require() would fail but a require_relative() worked.
-
-require_relative '../app/lib/mock_proxy'
-require_relative '../app/lib/mock_auth_middleware'
+require_relative '../lib/mock_proxy'
+require_relative '../lib/mock_auth_middleware'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -28,9 +27,8 @@ module RoRPlant
     # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
-    config.eager_load = true
     # config.eager_load_paths << Rails.root.join("extras")
-    config.eager_load_paths << Rails.root.join('lib')
+    # config.eager_load_paths << Rails.root.join('lib')
 
     # config.session_store :cache_store
 
