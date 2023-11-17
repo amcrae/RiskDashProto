@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "rdbg",
             "name": "rdbg Debug current file",
@@ -37,6 +38,15 @@
             "askParameters": false
         },
 
+        {
+            "type": "rdbg",
+            "name": "rdbg Debug RSpec current file",
+            // "rdbgPath": "~/.rbenv/shims/rdbg",
+            "request": "launch",
+            "script": "${userHome}/.rbenv/versions/2.7.8/bin/rspec",
+            "args": ["${file}"],
+            "askParameters": false
+        },
 
         {
             "type": "ruby_lsp",
