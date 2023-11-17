@@ -38,7 +38,8 @@ module HeaderAuthentication
 
     # Update the given user_info data structure with attributes of the
     # authenticated user given by the external Identity Provider.
-    # Updates can be made to user attributes or roles list depending on the header given.
+    # The user_info Hash must have keys shown in AppUserIntf#_blank_user_info .
+    # Updates can be made to :user_attributes or :ext_roles_array depending on the header given.
     # Return any additions made as a hash, such that if no changes are made a 0 sized hash is returned.
     # config == the current header auth configuration
     def get_user_details(header_name, config, header_value, req, sesh, user_info)
@@ -46,6 +47,7 @@ module HeaderAuthentication
     end
 
     # Test whether a header value is valid with respect to all data gathered from all headers.
+    # The user_info Hash must have keys shown in AppUserIntf#_blank_user_info .
     # If no test is to be done on a header, return nil.
     # Otherwise return true or false depending on header value validity.
     def user_details_validator(header_name, header_value, user_info)
