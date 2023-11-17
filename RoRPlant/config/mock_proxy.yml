@@ -13,7 +13,7 @@ development:
       header_values:
         x-auth-accesstoken: eyJmdWxsbmFtZSI6ICJVc2VyIFN3aWZ0LVR3byIsICJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWFpbCI6ICJ1c2VyMkBleGFtcGxlLmNvbSIsICJwaG9uZSI6IjA0OTEgNTcwIDE1NiIsICJpc3N1ZXIiOiJoZXlqdXN0LnRydXN0dXMuY29tIn18M2ViM2I2MGE5MDAyNDBjNWU0ZjIwYmZmZTViNzBhZTUzN2Q0MTRhMg==
         x-auth-identity: user2@example.com
-        x-auth-data: eyJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWVtYmVyT2YiOiBbICJYX1NUQUZGX1RFQ0hfR1JQIiwgIlhfU09NRVRISU5HX0VMU0UiIF0gfXw2NzFmMTc5N2UwNzU2MzBhMmM4NTg5NWVlMjM5NTkxODc4YjcwOWZl
+        x-auth-data: eyJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWVtYmVyT2YiOiBbICJYX0VYVF9URVJST1JJU1RfR1JQIiwgIlhfU09NRVRISU5HX0VMU0UiIF0gfXw0YjY3M2IwZWIwODFhY2NjY2IxZDAyNDZlZGFlYjNkZTZiMzk2NzVm
     user3:
       set_on_intercepted_path: /MOCKPROXY/user3/
       remove_on_intercepted_path: /MOCKPROXY/scrub
@@ -36,7 +36,7 @@ test:
       header_values:
         x-auth-accesstoken: eyJmdWxsbmFtZSI6ICJVc2VyIFN3aWZ0LVR3byIsICJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWFpbCI6ICJ1c2VyMkBleGFtcGxlLmNvbSIsICJwaG9uZSI6IjA0OTEgNTcwIDE1NiIsICJpc3N1ZXIiOiJoZXlqdXN0LnRydXN0dXMuY29tIn18M2ViM2I2MGE5MDAyNDBjNWU0ZjIwYmZmZTViNzBhZTUzN2Q0MTRhMg==
         x-auth-identity: user2@example.com
-        x-auth-data: eyJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWVtYmVyT2YiOiBbICJYX1NUQUZGX1RFQ0hfR1JQIiwgIlhfU09NRVRISU5HX0VMU0UiIF0gfXw2NzFmMTc5N2UwNzU2MzBhMmM4NTg5NWVlMjM5NTkxODc4YjcwOWZl
+        x-auth-data: eyJ1cG4iOiAidXNlcjJAZXhhbXBsZS5jb20iLCAibWVtYmVyT2YiOiBbICJYX0VYVF9URVJST1JJU1RfR1JQIiwgIlhfU09NRVRISU5HX0VMU0UiIF0gfXw0YjY3M2IwZWIwODFhY2NjY2IxZDAyNDZlZGFlYjNkZTZiMzk2NzVm
     user3:
       set_on_intercepted_path: /MOCKPROXY/user3/
       remove_on_intercepted_path: /MOCKPROXY/scrub
