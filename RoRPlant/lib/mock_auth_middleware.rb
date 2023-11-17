@@ -48,9 +48,10 @@ class MockAuthMiddleware
     # in case of a previously externally-authorised user
     # check if loss of headers has occurred or the headers user
     # has changed.
-    user_changed = false
+    userid_changed = false
     user_info = identify_user(req, sesh);
     if user_info != nil && user_info[:upn] != nil then
+      Rails.logger.info("Middleware identified user as #{user_info}")
       req_upn = user_info[:upn].downcase();
       if sesh[SESS_KEY_HA_AUTH_UPN] != nil then
         session_upn = sesh[SESS_KEY_HA_AUTH_UPN].downcase()
@@ -58,15 +59,19 @@ class MockAuthMiddleware
         ext_auth = self.class.app_user_needs_headerauth?(current_session_user)
         if ext_auth then 
           if req_upn == nil 
-            user_changed = true
+            userid_changed = true
             Rails.logger.info("External signout detected from old session of #{session_upn}, clearing auth session variables.")
           elsif req_upn != session_upn then
-            user_changed = true
+            userid_changed = true
             Rails.logger.warn("External headers show different user than current login of #{session_upn}, clearing auth session variables.")
+          else
+            Rails.logger.info("Refresh user details from token")
+            self.class.update_app_user(user_info);
+            self.class.set_app_user_roles(user_info[:ext_roles_array], current_session_user);
           end
         end
       end
-      if user_changed
+      if userid_changed
         clear_session_vars()
       end
     end

@@ -99,9 +99,6 @@ module HeaderAuthentication
     # TODO: remove as performance improvement, as changing params is infrequent after init development.
     # all_config = Rails.application.config_for(:header_authentication)
 
-    # make sure no UPN leftover from previous invocations if authentication fails.
-    sesh.delete(SESS_KEY_HA_AUTH_UPN);
-
     user_info = {
       upn: nil,
       app_account: nil,
@@ -188,9 +185,10 @@ module HeaderAuthentication
     else
       # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
       if user_info[:account] == nil then
-        # user_info[:account] = @new_user_method.call(user_info);
         user_info[:account] = self.class.create_app_user_from_template(user_info);
         user_info[:account].update_tracked_fields!(env) # Devise trackable
+      else
+        self.class.update_app_user(user_info);
       end
 
       # step 3.6.2  Done with updated user_roles object.
@@ -258,6 +256,8 @@ module HeaderAuthentication
     Rails.logger.debug("header_authentication.UPN?")
     sesh = session()
     req = request()
+    # make sure no UPN leftover from previous invocations if authentication fails.
+    sesh.delete(SESS_KEY_HA_AUTH_UPN);
     user_info = identify_user(req, sesh);
     # puts "identify_user returned #{user_info}"
     if user_info && user_info[:upn] != nil
