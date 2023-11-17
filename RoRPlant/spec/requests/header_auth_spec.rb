@@ -182,7 +182,7 @@ RSpec.describe "Page authn results", type: :system do
     # User should have been created from tokens at this point
     expect(page).to have_text("User McTwo");
     u2 = User.find_by(email: "user2@example.com")
-    # u2.freeze()
+    u2.freeze()
     expect(u2).not_to be_nil
     expect(u2.full_name).to eq("User McTwo")
     expect(u2.role_name).to eq("TECHNICIAN")
@@ -192,6 +192,7 @@ RSpec.describe "Page authn results", type: :system do
     # IdP provides different Full Name and different granted role.
     visit(root_path + "?a=/MOCKPROXY/user2m/");
     u2b = User.find_by(email: "user2@example.com")
+    u2b.reload()
     expect(u2b).not_to be_nil
     expect(u2b.full_name).to eq("User Swift-Two")
     expect(u2b.role_name).to eq("TERRORIST")
