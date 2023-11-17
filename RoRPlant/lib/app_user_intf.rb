@@ -36,10 +36,18 @@ module HeaderAuthentication
       raise NotImplementedError, "#{self.class} must implement the method #{__method__}"
     end
 
-    # Given a Hash object is returned by the HeaderAuthentication#get_user_template (e.g. a Hash)
+    # Given a template is returned by the AuthSchemeIntf#get_user_template (e.g. a Hash)
     #  create an ActiveRecord model of the User with the attributes populated from the template.
-    def create_app_user_from_template(template)
+    # The user_info Hash will have keys shown in AppUserIntf#_blank_user_info .
+    def create_app_user_from_template(user_info)
       # Concrete class must override and implement.
+      raise NotImplementedError, "#{self.class} must implement the method #{__method__}"
+    end
+
+    # Given a template updated by the AuthSchemeIntf#get_user_details (e.g. a Hash)
+    #  update an extant ActiveRecord of the User with the attributes populated from the template.
+    # The user_info Hash will have keys shown in AppUserIntf#_blank_user_info .
+    def update_app_user(user_info)
       raise NotImplementedError, "#{self.class} must implement the method #{__method__}"
     end
 
