@@ -35,7 +35,7 @@ RSpec.describe "authn middleware request", type: :request do
 
   it "returns the novel user2 User via Devise when given user2 tokens" do
     Rails.logger.debug "Request-type test 1"
-    get(root_path + "?a=/MOCKPROXY/user2")
+    get(root_path + "?a=/MOCKPROXY/user2/")
     puts "session == #{session.to_json}"
     expect(session['warden.user.user.key']).not_to be_nil
     u2 = User.find_by(email: "user2@example.com")
@@ -50,7 +50,7 @@ RSpec.describe "authn middleware request", type: :request do
     # users(:u_two)
     u_two()
 
-    get(root_path + "?a=/MOCKPROXY/user2")
+    get(root_path + "?a=/MOCKPROXY/user2/")
 
     puts "session == #{session.to_json()}"
     expect(session['warden.user.user.key']).not_to be_nil
@@ -68,7 +68,7 @@ RSpec.describe "authn middleware request", type: :request do
     puts "last_sign_in_at #{u2_csi0}"
     expect(u2_sic0).not_to be_nil
 
-    get(root_path + "?a=/MOCKPROXY/user2")
+    get(root_path + "?a=/MOCKPROXY/user2/")
     
     puts "lookup user id #{u2_0.id}"
     u2_1 = User.find(u2_0.id)
@@ -95,7 +95,7 @@ RSpec.describe "authn middleware request", type: :request do
       end
     end
 
-    get(root_path + "?a=/MOCKPROXY/user2")
+    get(root_path + "?a=/MOCKPROXY/user2/")
     
     counter = 0
     find_goals = [
@@ -140,7 +140,7 @@ RSpec.describe "Page authn results", type: :system do
 
   it "returns the user2 User via Devise when given user2 tokens", driver: :selenium_headless do
     Rails.logger.debug "Browser test 1"
-    visit(root_path + "?a=/MOCKPROXY/user2");
+    visit(root_path + "?a=/MOCKPROXY/user2/");
     # User should have been created from tokens at this point
     expect(page).to have_text("User McTwo");
     u2 = User.find_by(email: "user2@example.com")
@@ -167,13 +167,36 @@ RSpec.describe "Page authn results", type: :system do
 
   it "No user is loged in after the user2 User ceases sending authentication tokens", driver: :selenium_headless do
     Rails.logger.debug "Browser test 3"
-    visit(root_path + "?a=/MOCKPROXY/user2");
+    visit(root_path + "?a=/MOCKPROXY/user2/");
     # User should have been created from tokens at this point
     expect(page).to have_text("User McTwo");
     visit(root_path + "?a=/MOCKPROXY/scrub");
     # And identity persists in session over multiple requests.
     visit(root_path);
     expect(page).to have_text("You are not logged in.");
+  end
+
+  it "shows that user2 User has changed name and role when given altered tokens", driver: :selenium_headless do
+    Rails.logger.debug "Browser test 4"
+    visit(root_path + "?a=/MOCKPROXY/user2/");
+    # User should have been created from tokens at this point
+    expect(page).to have_text("User McTwo");
+    u2 = User.find_by(email: "user2@example.com")
+    # u2.freeze()
+    expect(u2).not_to be_nil
+    expect(u2.full_name).to eq("User McTwo")
+    expect(u2.role_name).to eq("TECHNICIAN")
+    # And identity persists in session over multiple requests.
+    visit(root_path);
+    expect(page).to have_text("User McTwo");
+    # IdP provides different Full Name and different granted role.
+    visit(root_path + "?a=/MOCKPROXY/user2m/");
+    u2b = User.find_by(email: "user2@example.com")
+    expect(u2b).not_to be_nil
+    expect(u2b.full_name).to eq("User Swift-Two")
+    expect(u2b.role_name).to eq("TERRORIST")
+    visit(root_path);
+    expect(page).to have_text("User Swift-Two");
   end
   
 end
