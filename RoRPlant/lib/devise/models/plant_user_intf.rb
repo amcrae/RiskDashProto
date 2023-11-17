@@ -58,12 +58,8 @@ module PlantUserIntf
     return account;
   end
 
-  def update_app_user(user_info)
-    account = User.find_by(email: user_info[:upn])
-    account.update(
-      full_name: user_info[:user_attributes]['fullname']
-    )
-    user_info[:account] = account
+  def update_app_user(user_info, account)
+    account.full_name = user_info[:user_attributes]['fullname']
   end
   
 end

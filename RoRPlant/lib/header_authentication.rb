@@ -188,7 +188,7 @@ module HeaderAuthentication
         user_info[:account] = self.class.create_app_user_from_template(user_info);
         user_info[:account].update_tracked_fields!(env) # Devise trackable
       else
-        self.class.update_app_user(user_info);
+        self.class.update_app_user(user_info, user_info[:account]);
       end
 
       # step 3.6.2  Done with updated user_roles object.
