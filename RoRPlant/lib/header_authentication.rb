@@ -95,10 +95,6 @@ module HeaderAuthentication
   end
 
   def identify_user(req, sesh)
-    # reloads config file each call.
-    # TODO: remove as performance improvement, as changing params is infrequent after init development.
-    # all_config = Rails.application.config_for(:header_authentication)
-
     user_info = {
       upn: nil,
       app_account: nil,
@@ -178,8 +174,7 @@ module HeaderAuthentication
       # 3.5.3 If this User is not permitted external authentication, instantly return failed authentication.
       ts = Time.now()
       Rails.logger.warn(
-        "#{ts} *** Valid external headers were provided for a non-external user #{user_info[:upn]}.\
-          Abandoning request and clearing auth session variables."
+        "#{ts} *** Valid external headers were provided for a non-external user #{user_info[:upn]}."
       );
       return nil
     else
