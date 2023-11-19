@@ -7,6 +7,7 @@ development:
       signing_key_args:
         access_key: "www.azure/PKCS/%kid%/key.gpg"
         userinfo_key: "www.aws/PKCS/%kid%/key.gpg"
+      use_directory_for_roles: false
       directory_formula: "http://127.0.0.1:3000/staticdata/$USER_memberOf.json"
       jwks_url: "https://heyjust.trustus.com/pkcs/$userid/pubkey.pem"
 
@@ -19,5 +20,6 @@ test:
       signing_key_args:
         access_key: "www.azure/PKCS/%kid%/key.gpg"
         userinfo_key: "www.aws/PKCS/%kid%/key.gpg"
+      use_directory_for_roles: false
       directory_formula: "file:./public/staticdata/$USER_memberOf.json"
       jwks_url: "https://heyjust.trustus.com/pkcs/$userid/pubkey.pem"

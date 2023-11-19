@@ -134,9 +134,12 @@ module MockHeaderAuthentication
     # Can extrac roles from token if given.
     data, sig_rcvd = decode_homebrew(header_value) 
     user_hash = JSON.parse(data)
-    given_ext_roles = user_hash['memberOf']
-    # Can query LDAP (etc) for more info.
-    given_ext_roles = query_directory_for_roles(config, user_info[:upn])
+    if config[:use_directory_for_roles] then
+      # Can query LDAP (etc) for more info.
+      given_ext_roles = query_directory_for_roles(config, user_info[:upn])
+    else 
+      given_ext_roles = [] || user_hash['memberOf']
+    end
     user_info[:ext_roles_array] = given_ext_roles
     # puts "given_ext_roles := #{given_ext_roles}"
     return { :ext_roles_array => given_ext_roles }
