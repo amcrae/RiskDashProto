@@ -45,7 +45,7 @@ module PlantUserIntf
     native_roles = ext_role_array.map(&@@ext_to_native_role)
     puts "native roles := #{native_roles}"
     # In this basic user model they only had 1 role.
-    account.role_name = given_native_roles[0]
+    account.role_name = native_roles[0]
   end
 
   def create_app_user_from_template(user_info) 
