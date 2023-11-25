@@ -35,7 +35,7 @@ module PlantUserIntf
     if @@role_mapping.has_key?(file_key) then
       return @@role_mapping[file_key][0]
     else
-      return ext_name
+      return nil
     end
   }
 
@@ -43,12 +43,17 @@ module PlantUserIntf
     @@role_mapping ||= Rails.application.config_for(:authorisation)[:provider_to_app];
     puts "ext_role_array == #{ext_role_array}"
     native_roles = ext_role_array.map(&@@ext_to_native_role)
+    native_roles.select! { |x| x != nil };
     puts "native roles := #{native_roles}"
     # In this basic user model they only had 1 role.
     account.role_name = native_roles[0]
   end
 
-  def create_app_user_from_template(user_info) 
+  def create_app_user_from_template(user_info)
+    if user_info[:ext_roles_array].size == 0 then
+      return nil
+    end
+    
     init_pw = Digest::SHA1.hexdigest(Random.bytes(8));
     account = User.new(
       auth_type: "EXTERNAL", # authentication continues to be by headers
