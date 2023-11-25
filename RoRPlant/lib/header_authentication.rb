@@ -72,7 +72,7 @@ module HeaderAuthentication
   end
 
   def cgize_name(real_name) 
-    ("HTTP_" + real_name).upcase().sub('-', '_')
+    ("HTTP_" + real_name.to_s).upcase().sub('-', '_')
   end
 
   def find_required_headers(req, sesh)
@@ -105,13 +105,16 @@ module HeaderAuthentication
     # step 3.3
     all_verified = true
     user_data_found = {}
-    for header_name in self.class.required_header_names()
+    header_order = self.class.required_header_names()
+    Rails.logger.debug("header_order #{header_order}");
+    for header_name in header_order
       # puts "HeaderAuth step #{i} #{header_name}"
       header_cgi_name = cgize_name(header_name)
       # present = req.has_header?(header_cgi_name); already checked
       header_value = req.get_header(header_cgi_name);
 
       verified = verify_header(header_name, @header_config, header_value, req, sesh, user_info)
+      Rails.logger.debug("verify_header(#{header_name}..) returned #{verified}");
       # Only extraction operations which specify a verifier should affect whether all headers were verified.
       if verified != nil then
         all_verified = all_verified && verified;
@@ -122,12 +125,12 @@ module HeaderAuthentication
         found_user_data = self.class.get_user_details(
           header_name, @header_config, header_value, req, sesh, user_info
         )
-        # puts "#{header_name} found #{found_user_data}"
+        Rails.logger.debug("#{header_name} found #{found_user_data}")
         user_data_found.update(found_user_data)
       end
     end
 
-    for header_name in self.class.required_header_names()
+    for header_name in header_order
       header_cgi_name = cgize_name(header_name)
       # present = req.has_header?(header_cgi_name); already checked
       header_value = req.get_header(header_cgi_name);
@@ -181,15 +184,20 @@ module HeaderAuthentication
       # 3.5.4 If the user does not exist, it is created from the the role+id tokens and saved to DB.
       if user_info[:account] == nil then
         user_info[:account] = self.class.create_app_user_from_template(user_info);
-        user_info[:account].update_tracked_fields!(env) # Devise trackable
+        # Application code may decide creation not permitted.
+        if user_info[:account] != nil then 
+          user_info[:account].update_tracked_fields!(env) # Devise trackable
+        end
       else
         self.class.update_app_user(user_info, user_info[:account]);
       end
 
       # step 3.6.2  Done with updated user_roles object.
       # @set_roles_method.call(user_info[:ext_roles_array], user_info[:account])
-      self.class.set_app_user_roles(user_info[:ext_roles_array], user_info[:account])
-      user_info[:account].save()
+      if user_info[:account] == nil then
+        self.class.set_app_user_roles(user_info[:ext_roles_array], user_info[:account])
+        user_info[:account].save()
+      end
       return user_info[:account]
     end
   end 
@@ -242,7 +250,7 @@ module HeaderAuthentication
     
     answer = session.has_key?(SESS_KEY_HA_STRATEGY_VALID) && session[SESS_KEY_HA_STRATEGY_VALID] \
             && !request.path.include?("sign_in")
-    Rails.logger.info("header_authentication. strategy valid? #{answer}.")
+    Rails.logger.info("header_authentication. #{self.class.name} strategy valid? #{answer}.")
     return answer
   end 
 
