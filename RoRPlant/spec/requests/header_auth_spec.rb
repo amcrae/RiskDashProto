@@ -176,8 +176,30 @@ RSpec.describe "Page authn results", type: :system do
     expect(page).to have_text("You are not logged in.");
   end
 
-  it "shows that user2 User has changed name and role when given altered tokens", driver: :selenium_headless do
+  it "shows that user2 has changed name & role after sign-in in with new tokens", driver: :selenium_headless do
     Rails.logger.debug "Browser test 4"
+    visit(root_path + "?a=/MOCKPROXY/user2/");
+    # User should have been created from tokens at this point
+    expect(page).to have_text("User McTwo");
+    u2 = User.find_by(email: "user2@example.com")
+    expect(u2).not_to be_nil
+    expect(u2.full_name).to eq("User McTwo")
+    expect(u2.role_name).to eq("TECHNICIAN")
+    # log out
+    visit(root_path + "?a=/MOCKPROXY/scrub");
+    # IdP provides different Full Name and different granted role.
+    visit(root_path + "?a=/MOCKPROXY/user2m/");
+    u2b = User.find_by(email: "user2@example.com")
+    u2b.reload()
+    expect(u2b).not_to be_nil
+    expect(u2b.full_name).to eq("User Swift-Two")
+    expect(u2b.role_name).to eq("TERRORIST")
+    visit(root_path);
+    expect(page).to have_text("User Swift-Two");
+  end
+
+  it "shows that user2 has changed name and role when given altered tokens", driver: :selenium_headless do
+    Rails.logger.debug "Browser test 5"
     visit(root_path + "?a=/MOCKPROXY/user2/");
     # User should have been created from tokens at this point
     expect(page).to have_text("User McTwo");
